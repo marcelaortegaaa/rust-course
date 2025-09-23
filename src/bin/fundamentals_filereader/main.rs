@@ -7,10 +7,24 @@
 // [ ] Read the file line-by-line and print it to the console
 
 use std::fs::File;
+// use std::env;
+use std::io;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    let file = File::open("non_existent_file.txt");
+    println!("Hi, welcome to The File Reader. Please enter your file's path");
+
+    let path = {
+        let mut name = String::new();
+        io::stdin()
+            .read_line(&mut name)
+            .expect("Failed to read input");
+        name.trim().to_string()
+    };
+
+    println!("Your answer is {:?}", path);
+
+    let file = File::open(path);
     let file = match file {
         Ok(file) => file,
         Err(error) => match error.kind() {
@@ -37,11 +51,9 @@ fn main() {
 // Sample code to get an idea on how to get the first argument in the console.
 // (Don't know what they mean by that)
 //
-//use std::env;
-//
 // fn main() {
-//     let args: Vec<String> = env::args().collect();
 
+// let args: Vec<String> = env::args().collect();
 //     // The first argument is the path that was used to call the program.
-//     println!("My path is {}.", args[0]);
+// println!("My path is {}", args[0]);
 // }
