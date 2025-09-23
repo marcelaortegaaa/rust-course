@@ -2,58 +2,112 @@
 // Create a File Reader Application
 //
 //To-Do:
-// [ ] Let user specify the file path as a command-line argument
-// [ ] Add error handling cases
-// [ ] Read the file line-by-line and print it to the console
+// [X] Let user specify the file path as a command-line argument
+// [X] Add error handling cases
+// [X] Read the file line-by-line and print it to the console
+// [X] Write on the files
+//
+// I get what they mean by command line argument now
+// I should also make it so users can write what they want to append
+// But I can't be bothered to do it right now
+// It's called file reader anyways
 
-use std::fs::File;
-// use std::env;
-use std::io;
-use std::io::{BufRead, BufReader};
+use std::env;
+use std::fs::{File, OpenOptions};
+use std::io::{BufRead, BufReader, Write};
 
 fn main() {
-    println!("Hi, welcome to The File Reader. Please enter your file's path");
+    let args: Vec<String> = env::args().collect();
+    println!("Your path is {:?}", args[1]);
 
-    let path = {
-        let mut name = String::new();
-        io::stdin()
-            .read_line(&mut name)
-            .expect("Failed to read input");
-        name.trim().to_string()
-    };
-
-    println!("Your answer is {:?}", path);
-
-    let file = File::open(path);
+    let file = File::open(&args[1]);
     let file = match file {
-        Ok(file) => file,
+        Ok(_) => match OpenOptions::new()
+            .read(true)
+            .write(true)
+            .append(true)
+            .open(&args[1])
+        {
+            Ok(file) => file,
+            Err(e) => {
+                eprintln!("Failed to open or create file: {}", e);
+                return;
+            }
+        },
         Err(error) => match error.kind() {
             std::io::ErrorKind::NotFound => {
-                panic!("File not found: {}", error)
+                println!("File not found: {}", error);
+                println!("Do you want to create the file? (y/n)");
+
+                let mut choice = String::new();
+                std::io::stdin()
+                    .read_line(&mut choice)
+                    .expect("Failed to read input");
+                let choice = choice.trim().to_lowercase();
+
+                if choice == "y" {
+                    match File::create(&args[1]) {
+                        Ok(_) => {
+                            println!("Your file was created");
+                            match OpenOptions::new()
+                                .read(true)
+                                .write(true)
+                                .append(true)
+                                .open(&args[1])
+                            {
+                                Ok(file) => file,
+                                Err(e) => {
+                                    eprintln!("Failed to reopen created file: {}", e);
+                                    return;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to create file: {}", e);
+                            return;
+                        }
+                    }
+                } else {
+                    println!("File was not created.");
+                    return;
+                }
+            }
+            std::io::ErrorKind::PermissionDenied => {
+                eprintln!("You do not have access to this file: {}", error);
+                return;
             }
             _ => {
-                panic!("Error opening file: {}", error)
+                eprintln!("Error opening file: {}", error);
+                return;
             }
         },
     };
 
-    let reader = BufReader::new(file);
+    let reader = BufReader::new(&file);
     for line in reader.lines() {
         match line {
             Ok(line) => println!("{}", line),
-            Err(error) => {
-                panic!("Error reading line: {}", error)
-            }
+            Err(error) => eprintln!("Error reading line: {}", error),
         }
     }
+
+    mark_file(&file);
 }
 
-// Sample code to get an idea on how to get the first argument in the console.
-// (Don't know what they mean by that)
-//
-// fn main() {
+fn mark_file(mut file: &File) {
+    println!("Hey, now that we're here. Do you wanna stamp the file as opened? (y/n)");
 
-// let args: Vec<String> = env::args().collect();
-//     // The first argument is the path that was used to call the program.
-// println!("My path is {}", args[0]);
-// }
+    let mut choice = String::new();
+    std::io::stdin()
+        .read_line(&mut choice)
+        .expect("Failed to read input");
+    let choice = choice.trim().to_lowercase();
+
+    if choice == "y" {
+        writeln!(file, "\nThis file has been opened by The File Reader")
+            .expect("Failed to add notice to file");
+        println!("Per your request, message printed.")
+    } else {
+        println!("Per your request, message not printed.")
+    }
+}
