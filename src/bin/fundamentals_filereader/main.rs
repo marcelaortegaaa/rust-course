@@ -7,7 +7,6 @@
 // [X] Read the file line-by-line and print it to the console
 // [X] Write on the files
 //
-// I get what they mean by command line argument now
 // I should also make it so users can write what they want to append
 // But I can't be bothered to do it right now
 // It's called file reader anyways
@@ -18,7 +17,7 @@ use std::io::{BufRead, BufReader, Write};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    println!("Your path is {:?}", args[1]);
+    println!("Your path is {}", args[1]);
 
     let file = File::open(&args[1]);
     let file = match file {
@@ -95,7 +94,7 @@ fn main() {
 }
 
 fn mark_file(mut file: &File) {
-    println!("Hey, now that we're here. Do you wanna stamp the file as opened? (y/n)");
+    println!("Hey, now that we're here. Do you wanna mark the file as opened? (y/n)");
 
     let mut choice = String::new();
     std::io::stdin()
