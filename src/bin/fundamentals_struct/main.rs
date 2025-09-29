@@ -1,8 +1,5 @@
 //Structs Demo
 // Spent 2 hours figuring out what an attribute is :)
-//
-// [X] Add associated function to named 'from_email' to 'User'. Takes email as a parameter and returns new `User` instance with 'username' derived from email address.
-// Done but I think it could be improved. Need to remove Some() from User.
 
 #[derive(Debug)]
 struct Person {
@@ -20,8 +17,8 @@ impl Person {
         age: u8,
         email: String,
         phone_number: String,
-    ) -> Person {
-        Person {
+    ) -> Self {
+        Self {
             first_name,
             last_name,
             age,
@@ -36,14 +33,19 @@ impl Person {
 }
 
 struct User {
-    username: Option<String>,
+    username: String,
     email: String,
     uri: String,
     active: bool,
 }
 
 impl User {
-    fn new(username: Option<String>, email: String, uri: String) -> Self {
+    fn new(email: String, uri: String) -> Self {
+        let username = match email.split_once('@') {
+            Some((user, _rest)) => user.to_string(),
+            None => email.clone(),
+        };
+
         Self {
             username,
             email,
@@ -58,40 +60,35 @@ impl User {
 
     fn set_username(&mut self) {
         if let Some((username, _)) = self.email.split_once("@") {
-            self.username = Some(username.to_string());
+            self.username = username.to_string();
         }
     }
 }
 
 fn main() {
     let new_person = Person::new(
-        String::from("John"),
-        String::from("Wick"),
+        "John".into(),
+        "Wick".into(),
         61,
-        String::from("johnwick@movie.com"),
-        String::from("+1 234 5678"),
+        "johnwick@movie.com".into(),
+        "+1 234 5678".into(),
     );
 
-    let mut new_user = User::new(
-        None,
-        String::from("jwick@mail.com"),
-        String::from("jwick.com"),
-    );
+    let mut new_user = User::new("jwick@mail.com".into(), "jwick.com".into());
 
     println!("{:#?}", new_person);
     println!("This person's full name is {}", new_person.full_name());
 
     new_user.set_username();
-    println!("Hello, {:#?}!", new_user.username);
+    println!("Hello, {}!", new_user.username);
     println!(
-        "Account {:#?} status is: {}",
+        "Account {} status is: {}",
         new_user.username, new_user.active
     );
 
     new_user.deactivate();
     println!(
-        "Account {:#?} status is: {}",
+        "Account {} status is: {}",
         new_user.username, new_user.active
     );
-    println!("{:#?}", new_user.username);
 }
