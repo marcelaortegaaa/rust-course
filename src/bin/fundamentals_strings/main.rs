@@ -55,12 +55,15 @@ fn main() {
             .collect();
 
         println!(
-            "The longest word(s) is/are: {:?}, with {} letters",
+            "The longest word(s) is/are: {:?}, with {} characters",
             longest, max_len
         );
     }
 
     longest_word(&sentence);
+
+    let test = "hey, is this thing working?".to_string();
+    longest_word(&test);
 
     // let reversed = sentence.chars().rev().collect::<String>();
     // println!("{}", reversed);
