@@ -9,23 +9,32 @@ fn get_item(index: usize) {
     println!("The value at index {} is {:?}", index, value);
 }
 
-// This could easily overflow BUT that's not what this lab is about
-fn sum_elements(vec: &Vec<u8>) {
+fn sum_elements(vec: &[i32]) -> i32 {
     // let mut sum = 0;
 
     // for e in vec {
     //     sum += e;
     // }
 
-    let sum: u8 = vec.iter().sum();
-    println!("The sum of the numbers in your vector is {}", sum);
+    vec.iter().sum()
+}
+
+fn add_first_last<T: Clone>(vec: &mut Vec<T>, item: T) {
+    vec.insert(0, item.clone());
+    vec.push(item);
+}
+
+fn append_vector<T: Clone>(main_vector: &mut Vec<T>, appended_vector: &mut Vec<T>) {
+    main_vector.append(appended_vector);
 }
 
 fn main() {
     let vec = vec![1, 2, 3, 4, 5];
     // let vec: Vec<i32> = vec![];
+
     get_item(3);
-    sum_elements(&vec);
+    let sum = sum_elements(&vec);
+    println!("The sum of the numbers in your vector is {}", sum);
 
     // Retrieve a value at a specific index
     // This panics
@@ -50,4 +59,32 @@ fn main() {
     // if let Some(first_value) = vec.first() {
     //     println!("The first value in the vector is: {}", first_value)
     // }
+
+    // ----------
+
+    let mut v = vec![1, 2, 3];
+    let mut hutter = vec![11, 12, 13]; // getting it's numbers sucked like it's nosferatu
+
+    v.push(4);
+    println!("{:?}", v);
+
+    // extend adds each element of the given slice to the vector
+    let more_numbers = vec![5, 6];
+    v.extend(more_numbers);
+    println!("{:?}", v);
+
+    // append adds the given vector to the vector, requires the vector to be mutable
+    let mut other_numbers = vec![7, 8];
+    v.append(&mut other_numbers);
+    println!("{:?}", v);
+
+    // insert items at a given index
+    v.insert(0, 0);
+    println!("{:?}", v); // Output: [0, 1, 2, 3, 4, 5, 6, 7, 8]}
+
+    add_first_last(&mut v, 9);
+    println!("{:?}", v);
+
+    append_vector(&mut v, &mut hutter);
+    println!("{:?} and {:?}", v, hutter);
 }
