@@ -9,7 +9,7 @@ fn get_item(index: usize) {
     println!("The value at index {} is {:?}", index, value);
 }
 
-fn sum_elements(vec: Vec<u8>) {
+fn sum_elements(vec: &Vec<u8>) {
     let mut sum = 0;
 
     for e in vec {
@@ -23,7 +23,7 @@ fn main() {
     let vec = vec![1, 2, 3, 4, 5];
     // let vec: Vec<i32> = vec![];
     get_item(3);
-    sum_elements(vec);
+    sum_elements(&vec);
 
     // Retrieve a value at a specific index
     // This panics
