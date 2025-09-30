@@ -9,13 +9,15 @@ fn get_item(index: usize) {
     println!("The value at index {} is {:?}", index, value);
 }
 
+// This could easily overflow BUT that's not what this lab is about
 fn sum_elements(vec: &Vec<u8>) {
-    let mut sum = 0;
+    // let mut sum = 0;
 
-    for e in vec {
-        sum += e;
-    }
+    // for e in vec {
+    //     sum += e;
+    // }
 
+    let sum: u8 = vec.iter().sum();
     println!("The sum of the numbers in your vector is {}", sum);
 }
 
