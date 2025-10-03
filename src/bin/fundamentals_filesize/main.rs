@@ -1,3 +1,24 @@
+// Module 3: External Lab
+// Create a File Size Formatter
+//
+//To-Do:
+// [ ] Get String with size and unit and return Struct with representations in KB, MB, etc.
+// [ ] Split the input string to capture number and the sizes
+
+use std::env;
+
+fn prepare_input(s: String) -> (String, String) {
+    let reduced = s.to_lowercase().split_whitespace().collect::<String>();
+
+    match reduced.find(|c: char| c.is_alphabetic()) {
+        Some(i) => {
+            let (left, right) = reduced.split_at(i);
+            (left.to_string(), right.to_string())
+        }
+        None => (reduced.to_string(), "".to_string()),
+    }
+}
+
 enum FileSize {
     Bytes(u64),
     Kilobytes(f64),
@@ -22,6 +43,19 @@ fn format_size(size: u64) -> String {
 }
 
 fn main() {
-    let result = format_size(6888837399);
-    println!("{}", result)
+    let arg = env::args().nth(1); // Can be merged on the match below
+    println!("argument: {:?}", arg);
+
+    let file_size = match arg {
+        Some(input) => prepare_input(input),
+        None => {
+            println!("You have not provided a file size.");
+            return;
+        }
+    };
+
+    println!("{:?}", file_size)
+
+    // let result = format_size(6888837399);
+    // println!("{}", result)
 }
