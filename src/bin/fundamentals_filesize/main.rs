@@ -7,20 +7,21 @@
 // [X] Create the struct and the function for struct instances
 // [ ] Make numbers floats
 
+use library_project::prepare_input;
 use std::env;
 use std::fmt;
 
-fn prepare_input(s: String) -> (u64, String) {
-    let reduced = s.to_lowercase().split_whitespace().collect::<String>();
+// fn prepare_input(s: String) -> (u64, String) {
+//     let reduced = s.to_lowercase().split_whitespace().collect::<String>();
 
-    match reduced.find(|c: char| c.is_alphabetic()) {
-        Some(i) => {
-            let (left, right) = reduced.split_at(i);
-            (left.parse().unwrap(), right.to_string())
-        }
-        None => (reduced.parse().unwrap(), "".to_string()),
-    }
-}
+//     match reduced.find(|c: char| c.is_alphabetic()) {
+//         Some(i) => {
+//             let (left, right) = reduced.split_at(i);
+//             (left.parse().unwrap(), right.to_string())
+//         }
+//         None => (reduced.parse().unwrap(), "".to_string()),
+//     }
+// }
 
 #[derive(Debug, Clone, Copy)]
 enum Unit {
