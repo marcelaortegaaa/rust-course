@@ -2,12 +2,13 @@
 // Create a File Size Formatter
 //
 //To-Do:
-// [ ] Get String with size and unit and return Struct with representations in KB, MB, etc.
+// [X] Get String with size and unit and return Struct with representations in KB, MB, etc.
 // [X] Split the input string to capture number and the sizes
-// [ ] Create the struct and the function for struct instances
+// [X] Create the struct and the function for struct instances
+// [ ] Make numbers floats
 
 use std::env;
-use std::num::ParseIntError;
+use std::fmt;
 
 fn prepare_input(s: String) -> (u64, String) {
     let reduced = s.to_lowercase().split_whitespace().collect::<String>();
@@ -30,7 +31,6 @@ enum Unit {
 }
 
 impl Unit {
-    /// Map user text → Unit. Add all synonyms you want to accept here.
     fn from_str(s: &str) -> Option<Self> {
         match s {
             "b" | "byte" | "bytes" => Some(Unit::Bytes),
@@ -50,6 +50,15 @@ impl Unit {
             Unit::Gigabytes => 1_000_000_000,
         }
     }
+
+    fn label(self) -> &'static str {
+        match self {
+            Unit::Bytes => "bytes",
+            Unit::Kilobytes => "kilobytes",
+            Unit::Megabytes => "megabytes",
+            Unit::Gigabytes => "gigabytes",
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -67,28 +76,26 @@ fn to_base_bytes(number: u64, unit_str: &str) -> Result<u64, ParseSizeError> {
         .ok_or(ParseSizeError::Overflow)
 }
 
-// fn format_size(size: u64) -> String {
-//     let filesize = match size {
-//         0..=999 => FileSize::Bytes(size),
-//         1000..=999_999 => FileSize::Kilobytes(size as f64 / 1000.0),
-//         1_000_000..=999_999_999 => FileSize::Megabytes(size as f64 / 1_000_000.0),
-//         _ => FileSize::Gigabytes(size as f64 / 1_000_000_000.0),
-//     };
+fn with_unit(n: u64, u: Unit) -> String {
+    format!("{} {}", n, u.label())
+}
 
-//     match filesize {
-//         FileSize::Bytes(bytes) => format!("{} bytes", bytes),
-//         FileSize::Kilobytes(kb) => format!("{:.2} KB", kb),
-//         FileSize::Megabytes(mb) => format!("{:.2} MB", mb),
-//         FileSize::Gigabytes(gb) => format!("{:.2} GB", gb),
-//     }
-// }
-
-#[derive(Debug)]
 struct Sizes {
     bytes: u64,
     kilobytes: u64,
     megabytes: u64,
     gigabytes: u64,
+}
+
+impl fmt::Debug for Sizes {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Sizes")
+            .field("bytes", &with_unit(self.bytes, Unit::Bytes))
+            .field("kilobytes", &with_unit(self.kilobytes, Unit::Kilobytes))
+            .field("megabytes", &with_unit(self.megabytes, Unit::Megabytes))
+            .field("gigabytes", &with_unit(self.gigabytes, Unit::Gigabytes))
+            .finish()
+    }
 }
 
 impl Sizes {
@@ -107,31 +114,26 @@ impl Sizes {
 }
 
 fn main() {
-    let arg = env::args().nth(1); // Can be merged on the match below
-    println!("argument: {:?}", arg);
-
-    let prepared_input = match arg {
+    let prepared_input = match env::args().nth(1) {
         Some(input) => prepare_input(input),
         None => {
             println!("You have not provided a file size.");
             return;
         }
     };
-    println!("{:?}", prepared_input);
 
-    let base_bytes = to_base_bytes(prepared_input.0, prepared_input.1.as_str());
-    println!("base bytes: {:?}", base_bytes);
+    let base_bytes = match to_base_bytes(prepared_input.0, prepared_input.1.as_str()) {
+        Ok(b) => b,
+        Err(ParseSizeError::UnknownUnit(u)) => {
+            eprintln!("Unknown unit: {u}");
+            return;
+        }
+        Err(ParseSizeError::Overflow) => {
+            eprintln!("Size too large (overflow)");
+            return;
+        }
+    };
 
-    // match (&file_size.0, file_size.1.as_str()) {
-    //     (a, "kb" | "kbs" | "kilobytes") => {
-    //         let base_bytes = a * 1000;
-    //         println!("In: {}", base_bytes);
-    //         let size_struct = Sizes::new(base_bytes);
-    //         println!("{:#?}", size_struct)
-    //     }
-    //     _ => println!("Out of bounds"),
-    // }
-
-    // let result = format_size(6888837399);
-    // println!("{}", result)
+    let size_struct = Sizes::new(base_bytes);
+    println!("{:#?}", size_struct)
 }
