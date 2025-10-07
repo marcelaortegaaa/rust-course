@@ -1,1 +1,1 @@
-searchState.loadedDescShard("library_project", 0, "")
+searchState.loadedDescShard("library_project", 0, "This library contains utils for normalizing inputs The …\nFor normalized inputs for units of digital information (…\nReturns the argument unchanged.\nAccepts multiple instances and classifies into variants\nCalls <code>U::from(self)</code>.\nLabels for displaying\nConversion rate from any unit into bytes\nThis function takes a String and normalizes it into a …")

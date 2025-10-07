@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["prepare_input","to_base_bytes"]};
+window.SIDEBAR_ITEMS = {"enum":["ByteUnit"],"fn":["prepare_input"]};

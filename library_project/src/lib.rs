@@ -1,7 +1,19 @@
-use std::env;
-use std::fmt;
+//! This library contains utils for normalizing inputs
+//! The function available turns Strings into tuples that separate value and unit.
+//! # Example
+//! ```
+//! library_project::prepare_input;
+//! let normalized_input = prepare_input(input);
+//! ```
 
-pub fn prepare_input(s: String) -> (u64, String) {
+/// This function takes a String and normalizes it into a tuple with an unsigned integer and a lowercase String.
+/// It's meant to be used on strings that contain a value and a unit.
+/// It doesn't matter if your value and unit are separate ("3 kg") or together ("3kg")
+/// # Example
+/// ```
+/// let normalized_input = prepare_input(input);
+/// ```
+pub fn prepare_input(s: &String) -> (u64, String) {
     let reduced = s.to_lowercase().split_whitespace().collect::<String>();
 
     match reduced.find(|c: char| c.is_alphabetic()) {
@@ -13,56 +25,45 @@ pub fn prepare_input(s: String) -> (u64, String) {
     }
 }
 
+/// For normalized inputs for units of digital information (*bytes*)
 #[derive(Debug, Clone, Copy)]
-enum Unit {
+pub enum ByteUnit {
     Bytes,
     Kilobytes,
     Megabytes,
     Gigabytes,
 }
 
-impl Unit {
-    fn from_str(s: &str) -> Option<Self> {
+impl ByteUnit {
+    ///Accepts multiple instances and classifies into variants
+    pub fn from_str(s: &str) -> Option<Self> {
         match s {
-            "b" | "byte" | "bytes" => Some(Unit::Bytes),
-            "kb" | "kbs" | "kilobyte" | "kilobytes" => Some(Unit::Kilobytes),
-            "mb" | "megabyte" | "megabytes" => Some(Unit::Megabytes),
-            "gb" | "gigabyte" | "gigabytes" => Some(Unit::Gigabytes),
-            "" => Some(Unit::Bytes),
+            "b" | "byte" | "bytes" => Some(ByteUnit::Bytes),
+            "kb" | "kbs" | "kilobyte" | "kilobytes" => Some(ByteUnit::Kilobytes),
+            "mb" | "megabyte" | "megabytes" => Some(ByteUnit::Megabytes),
+            "gb" | "gigabyte" | "gigabytes" => Some(ByteUnit::Gigabytes),
+            "" => Some(ByteUnit::Bytes),
             _ => None,
         }
     }
 
-    fn multiplier(self) -> u64 {
+    ///Conversion rate from any unit into bytes
+    pub fn multiplier(self) -> u64 {
         match self {
-            Unit::Bytes => 1,
-            Unit::Kilobytes => 1_000,
-            Unit::Megabytes => 1_000_000,
-            Unit::Gigabytes => 1_000_000_000,
+            ByteUnit::Bytes => 1,
+            ByteUnit::Kilobytes => 1_000,
+            ByteUnit::Megabytes => 1_000_000,
+            ByteUnit::Gigabytes => 1_000_000_000,
         }
     }
 
-    fn label(self) -> &'static str {
+    ///Labels for displaying
+    pub fn label(self) -> &'static str {
         match self {
-            Unit::Bytes => "bytes",
-            Unit::Kilobytes => "kilobytes",
-            Unit::Megabytes => "megabytes",
-            Unit::Gigabytes => "gigabytes",
+            ByteUnit::Bytes => "bytes",
+            ByteUnit::Kilobytes => "kilobytes",
+            ByteUnit::Megabytes => "megabytes",
+            ByteUnit::Gigabytes => "gigabytes",
         }
     }
-}
-
-#[derive(Debug)]
-enum ParseSizeError {
-    UnknownUnit(String),
-    Overflow,
-}
-
-pub fn to_base_bytes(number: u64, unit_str: &str) -> Result<u64, ParseSizeError> {
-    let unit = Unit::from_str(unit_str)
-        .ok_or_else(|| ParseSizeError::UnknownUnit(unit_str.to_string()))?;
-
-    number
-        .checked_mul(unit.multiplier())
-        .ok_or(ParseSizeError::Overflow)
 }
