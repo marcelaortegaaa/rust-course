@@ -7,6 +7,8 @@
 //! let normalized_input = prepare_input(&input);
 //! ```
 
+pub mod byte_unit;
+
 /// This function takes a String and normalizes it into a tuple with an unsigned integer and a lowercase String.
 /// It's meant to be used on strings that contain a value and a unit.
 /// It doesn't matter if your value and unit are separate or together
@@ -28,45 +30,23 @@ pub fn prepare_input(s: &String) -> (u64, String) {
     }
 }
 
-/// For normalized inputs for units of digital information (*bytes*)
-#[derive(Debug, Clone, Copy)]
-pub enum ByteUnit {
-    Bytes,
-    Kilobytes,
-    Megabytes,
-    Gigabytes,
+/// Returns errors when turning inputs into bytes
+#[derive(Debug)]
+pub enum ParseSizeError {
+    UnknownUnit(String),
+    Overflow,
 }
 
-impl ByteUnit {
-    ///Accepts multiple instances and classifies into variants
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s {
-            "b" | "byte" | "bytes" => Some(ByteUnit::Bytes),
-            "kb" | "kbs" | "kilobyte" | "kilobytes" => Some(ByteUnit::Kilobytes),
-            "mb" | "megabyte" | "megabytes" => Some(ByteUnit::Megabytes),
-            "gb" | "gigabyte" | "gigabytes" => Some(ByteUnit::Gigabytes),
-            "" => Some(ByteUnit::Bytes),
-            _ => None,
-        }
-    }
+/// Turns value and unit into bytes
+/// ```
+/// use library_project::to_base_bytes;
+/// to_base_bytes(45, "mb");
+/// ```
+pub fn to_base_bytes(number: u64, unit_str: &str) -> Result<u64, ParseSizeError> {
+    let unit = byte_unit::ByteUnit::from_str(unit_str)
+        .ok_or_else(|| ParseSizeError::UnknownUnit(unit_str.to_string()))?;
 
-    ///Conversion rate from any unit into bytes
-    pub fn multiplier(self) -> u64 {
-        match self {
-            ByteUnit::Bytes => 1,
-            ByteUnit::Kilobytes => 1_000,
-            ByteUnit::Megabytes => 1_000_000,
-            ByteUnit::Gigabytes => 1_000_000_000,
-        }
-    }
-
-    ///Labels for displaying
-    pub fn label(self) -> &'static str {
-        match self {
-            ByteUnit::Bytes => "bytes",
-            ByteUnit::Kilobytes => "kilobytes",
-            ByteUnit::Megabytes => "megabytes",
-            ByteUnit::Gigabytes => "gigabytes",
-        }
-    }
+    number
+        .checked_mul(unit.multiplier())
+        .ok_or(ParseSizeError::Overflow)
 }

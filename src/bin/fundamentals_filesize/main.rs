@@ -69,7 +69,7 @@ enum ParseSizeError {
 }
 
 fn to_base_bytes(number: u64, unit_str: &str) -> Result<u64, ParseSizeError> {
-    let unit = Unit::from_str(unit_str)
+    let unit = ByteUnit::from_str(unit_str)
         .ok_or_else(|| ParseSizeError::UnknownUnit(unit_str.to_string()))?;
 
     number
