@@ -91,4 +91,6 @@ fn main() {
         "Account {} status is: {}",
         new_user.username, new_user.active
     );
+
+    println!("This is the struct: {:#?}", new_person);
 }
