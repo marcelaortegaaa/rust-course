@@ -2,16 +2,19 @@
 //! The function available turns Strings into tuples that separate value and unit.
 //! # Example
 //! ```
-//! library_project::prepare_input;
-//! let normalized_input = prepare_input(input);
+//! use library_project::prepare_input;
+//! let input = "3kg".to_string();
+//! let normalized_input = prepare_input(&input);
 //! ```
 
 /// This function takes a String and normalizes it into a tuple with an unsigned integer and a lowercase String.
 /// It's meant to be used on strings that contain a value and a unit.
-/// It doesn't matter if your value and unit are separate ("3 kg") or together ("3kg")
+/// It doesn't matter if your value and unit are separate or together
 /// # Example
 /// ```
-/// let normalized_input = prepare_input(input);
+/// use library_project::prepare_input;
+/// let input = "3kg".to_string();
+/// let normalized_input = prepare_input(&input);
 /// ```
 pub fn prepare_input(s: &String) -> (u64, String) {
     let reduced = s.to_lowercase().split_whitespace().collect::<String>();
