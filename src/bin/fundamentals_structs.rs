@@ -78,12 +78,16 @@ fn main() {
 
     println!("{:#?}", new_person);
     println!("This person's full name is {}", new_person.full_name());
+    println!(
+        "{}, {}, {}",
+        new_person.age, new_person.email, new_person.phone_number
+    );
 
     new_user.set_username();
     println!("Hello, {}!", new_user.username);
     println!(
-        "Account {} status is: {}",
-        new_user.username, new_user.active
+        "Account {} ({}) status is: {}",
+        new_user.username, new_user.uri, new_user.active
     );
 
     new_user.deactivate();
