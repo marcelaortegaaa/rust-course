@@ -2,99 +2,58 @@
 // Spent 2 hours figuring out what an attribute is :)
 
 #[derive(Debug)]
-struct Person {
+struct User {
     first_name: String,
     last_name: String,
-    age: u8,
+    username: String,
     email: String,
-    phone_number: String,
+    age: u8,
+    active: bool,
 }
 
-impl Person {
-    fn new(
-        first_name: String,
-        last_name: String,
-        age: u8,
-        email: String,
-        phone_number: String,
-    ) -> Self {
+impl User {
+    fn new(first_name: String, last_name: String, email: String, age: u8) -> Self {
+        let username = match email.split_once('@') {
+            Some((user, _)) => user.to_string(),
+            None => email.clone(),
+        };
+
         Self {
             first_name,
             last_name,
-            age,
+            username,
             email,
-            phone_number,
+            age,
+            active: true,
         }
     }
 
     fn full_name(&self) -> String {
         format!("{} {}", self.first_name, self.last_name)
     }
-}
-
-struct User {
-    username: String,
-    email: String,
-    uri: String,
-    active: bool,
-}
-
-impl User {
-    fn new(email: String, uri: String) -> Self {
-        let username = match email.split_once('@') {
-            Some((user, _rest)) => user.to_string(),
-            None => email.clone(),
-        };
-
-        Self {
-            username,
-            email,
-            uri,
-            active: true,
-        }
-    }
 
     fn deactivate(&mut self) {
         self.active = false;
+        println!(
+            "The status for the account {} is now {}",
+            self.username, self.active
+        );
     }
 
-    fn set_username(&mut self) {
-        if let Some((username, _)) = self.email.split_once("@") {
-            self.username = username.to_string();
-        }
+    fn greet(&self) {
+        println!("Hello, {}.", self.full_name());
     }
 }
 
 fn main() {
-    let new_person = Person::new(
-        "John".into(),
-        "Wick".into(),
+    let mut new_user = User::new(
+        "John".to_string(),
+        "Wick".to_string(),
+        "johnwick@movie.com".to_string(),
         61,
-        "johnwick@movie.com".into(),
-        "+1 234 5678".into(),
     );
 
-    let mut new_user = User::new("jwick@mail.com".into(), "jwick.com".into());
-
-    println!("{:#?}", new_person);
-    println!("This person's full name is {}", new_person.full_name());
-    println!(
-        "{}, {}, {}",
-        new_person.age, new_person.email, new_person.phone_number
-    );
-
-    new_user.set_username();
-    println!("Hello, {}!", new_user.username);
-    println!(
-        "Account {} ({}) status is: {}",
-        new_user.username, new_user.uri, new_user.active
-    );
-
+    new_user.greet();
     new_user.deactivate();
-    println!(
-        "Account {} status is: {}",
-        new_user.username, new_user.active
-    );
-
-    println!("This is the struct: {:#?}", new_person);
+    println!("age: {}, email: {}", new_user.age, new_user.email)
 }

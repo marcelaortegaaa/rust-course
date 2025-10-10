@@ -31,7 +31,7 @@ pub fn prepare_input(s: &String) -> (u64, String) {
 }
 
 /// Returns errors when turning inputs into bytes
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ParseSizeError {
     UnknownUnit(String),
     Overflow,
@@ -49,4 +49,22 @@ pub fn to_base_bytes(number: u64, unit_str: &str) -> Result<u64, ParseSizeError>
     number
         .checked_mul(unit.multiplier())
         .ok_or(ParseSizeError::Overflow)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_to_base_bytes() {
+        let x: (u64, &str) = (34, "kilometre");
+        let result = to_base_bytes(x.0, x.1);
+
+        assert_eq!(
+            result,
+            Err(ParseSizeError::UnknownUnit("kilometre".to_string())),
+            "Result is {:#?}",
+            result
+        )
+    }
 }

@@ -1,5 +1,5 @@
 /// For normalized inputs for units of digital information (*bytes*)
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ByteUnit {
     Bytes,
     Kilobytes,
@@ -9,7 +9,7 @@ pub enum ByteUnit {
 
 impl ByteUnit {
     ///Accepts multiple instances and classifies into variants
-    pub(super) fn from_str(s: &str) -> Option<Self> {
+    pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "b" | "byte" | "bytes" => Some(ByteUnit::Bytes),
             "kb" | "kbs" | "kilobyte" | "kilobytes" => Some(ByteUnit::Kilobytes),
