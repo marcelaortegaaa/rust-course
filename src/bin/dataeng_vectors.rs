@@ -1,10 +1,10 @@
 // To Do:
 // [X] Let user add fruits to the salad
-// [ ] Select a random fruit with .choose from rand
+// [X] Select a random fruit with .choose from rand
 // [ ] Select a number of random fruits from a list and add to salad
 
 use rand::rng;
-use rand::seq::SliceRandom;
+use rand::seq::{IndexedRandom, SliceRandom};
 use std::io;
 
 fn main() {
@@ -48,6 +48,9 @@ fn main() {
     // Scramble (shuffle) the fruit
     let mut rng = rng();
     fruit.shuffle(&mut rng);
+
+    // Pick a random fruit
+    println!("Here's a random fruit: {}", fruit.choose(&mut rng).unwrap());
 
     // // Print out the fruit salad
     // println!("Fruit Salad:");
