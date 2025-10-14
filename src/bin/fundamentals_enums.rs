@@ -44,7 +44,7 @@ fn biggest_area(shapes_vector: &Vec<Shape>) -> (&Shape, f64) {
         .max_by(|(_, a), (_, b)| a.total_cmp(b))
         .unwrap();
 
-    return biggest_shape;
+    biggest_shape
 }
 
 fn main() {
