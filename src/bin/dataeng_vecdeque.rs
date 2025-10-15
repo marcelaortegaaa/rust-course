@@ -1,15 +1,5 @@
-/*
-This code starts with an initial VecDeque,
-converts it to a Vec for shuffling, and then converts it back to a VecDeque.
-After that, it pushes "Pomegranate" to the front of the deque, and "Fig" and "Cherry"
-to the back of the deque. Finally, it prints out the final fruit salad.
-
-A VecDeque is a double-ended queue, which means that you can push and pop from both ends
-of the queue.
-*/
-
 use rand::rng;
-use rand::seq::SliceRandom; // rand is a random number generation library in Rust
+use rand::seq::SliceRandom;
 use std::collections::VecDeque;
 
 fn main() {
@@ -40,4 +30,6 @@ fn main() {
             println!("{}", item);
         }
     }
+
+    println!("Removed: {} Now: {:?}", fruit.pop_front().unwrap(), fruit);
 }
