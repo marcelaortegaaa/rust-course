@@ -8,6 +8,7 @@
 //! ```
 
 pub mod byte_unit;
+pub mod cli_fruitsalad;
 
 /// This function takes a String and normalizes it into a tuple with an unsigned integer and a lowercase String.
 /// It's meant to be used on strings that contain a value and a unit.
