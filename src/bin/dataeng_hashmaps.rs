@@ -1,5 +1,5 @@
 // [X] Let user pass input
-// [ ] Count words in a sentence
+// [X] Count words in a sentence
 // [X] Sort result by frequency
 
 use clap::Parser;
@@ -9,21 +9,25 @@ use std::collections::HashMap;
 #[command(
     version = "1.0",
     author = "Marcela ◡̈",
-    about = "Counter for numbers in a vector"
+    about = "Counter for numbers in a vector",
+    name = "counter"
 )]
+#[group(id = "mode", required = true, multiple = false)]
 struct Opts {
     #[arg(
         long,
         value_delimiter = ',',
         num_args = 1..,
         value_parser = clap::value_parser!(i32),
-        default_values_t = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 3],
         help = "Vector to count the numbers of"
     )]
-    vector: Vec<i32>,
+    vector: Option<Vec<i32>>,
+
+    #[arg(long, help = "String to count the words of")]
+    sentence: Option<String>,
 }
 
-fn logic(numbers: Vec<i32>) -> Vec<(i32, u32)> {
+fn number_logic(numbers: Vec<i32>) -> Vec<(i32, u32)> {
     let mut frequencies = HashMap::new();
 
     for num in numbers {
@@ -41,15 +45,43 @@ fn logic(numbers: Vec<i32>) -> Vec<(i32, u32)> {
     result
 }
 
+fn sentence_logic(words: Vec<&str>) -> Vec<(&str, u32)> {
+    let mut frequencies = HashMap::new();
+
+    for w in words {
+        let frequency = frequencies.entry(w).or_insert(0);
+        *frequency += 1;
+    }
+
+    let mut result = Vec::new();
+
+    for (w, frequency) in frequencies {
+        result.push((w, frequency));
+    }
+    result.sort_by(|a, b| b.1.cmp(&a.1));
+
+    result
+}
+
 fn main() {
     let opts: Opts = Opts::parse();
-    let user_input = opts.vector;
 
-    let result = logic(user_input);
-
-    //print the results in a human readable format that explains what the result is.
-    println!(
-        "The frequency of each number in the vector is: {:?}",
-        result
-    );
+    match (opts.vector, opts.sentence) {
+        (Some(v), None) => {
+            let result = number_logic(v);
+            println!(
+                "The frequency of each number in the vector is: {:?}",
+                result
+            );
+        }
+        (None, Some(s)) => {
+            let words: Vec<&str> = s.split_whitespace().collect();
+            let result = sentence_logic(words);
+            println!(
+                "The frequency of each word in the sentence is: {:?}",
+                result
+            );
+        }
+        _ => unreachable!("Pass either a vector or a sentence"),
+    }
 }
