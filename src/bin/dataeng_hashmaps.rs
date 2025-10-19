@@ -1,6 +1,6 @@
 // [X] Let user pass input
 // [ ] Count words in a sentence
-// [ ] Sort result by frequency
+// [X] Sort result by frequency
 
 use clap::Parser;
 use std::collections::HashMap;
@@ -36,6 +36,7 @@ fn logic(numbers: Vec<i32>) -> Vec<(i32, u32)> {
     for (num, frequency) in frequencies {
         result.push((num, frequency));
     }
+    result.sort_by(|a, b| b.1.cmp(&a.1));
 
     result
 }
