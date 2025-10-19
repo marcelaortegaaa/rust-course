@@ -1,8 +1,8 @@
 use rand::rng;
 use rand::seq::SliceRandom;
 
-pub fn create_fruit_salad(num_fruits: usize) -> Vec<String> {
-    let fruits = vec![
+pub fn create_fruit_salad(num_fruits: usize, picked_fruits: Vec<String>) -> Vec<String> {
+    let mut fruits = vec![
         "Arbutus".to_string(),
         "Loquat".to_string(),
         "Strawberry Tree Berry".to_string(),
@@ -16,8 +16,14 @@ pub fn create_fruit_salad(num_fruits: usize) -> Vec<String> {
     ];
 
     let mut rng = rng();
-    let mut fruits = fruits;
     fruits.shuffle(&mut rng);
 
-    fruits.into_iter().take(num_fruits).collect()
+    let mut fruits: Vec<String> = fruits
+        .into_iter()
+        .filter(|s| picked_fruits.is_empty() || picked_fruits.contains(s))
+        .take(num_fruits)
+        .collect();
+
+    fruits.sort();
+    fruits
 }
