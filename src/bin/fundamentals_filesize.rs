@@ -11,6 +11,68 @@ use library_project::{ParseSizeError, byte_unit::ByteUnit, prepare_input, to_bas
 use std::env;
 use std::fmt;
 
+fn with_unit(n: u64, u: ByteUnit) -> String {
+    format!("{} {}", n, u.label())
+}
+
+struct Sizes {
+    bytes: u64,
+    kilobytes: u64,
+    megabytes: u64,
+    gigabytes: u64,
+}
+
+impl fmt::Debug for Sizes {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Sizes")
+            .field("bytes", &with_unit(self.bytes, ByteUnit::Bytes))
+            .field("kilobytes", &with_unit(self.kilobytes, ByteUnit::Kilobytes))
+            .field("megabytes", &with_unit(self.megabytes, ByteUnit::Megabytes))
+            .field("gigabytes", &with_unit(self.gigabytes, ByteUnit::Gigabytes))
+            .finish()
+    }
+}
+
+impl Sizes {
+    fn new(base_bytes: u64) -> Self {
+        let kb = base_bytes / 1_000;
+        let mb = base_bytes / 1_000_000;
+        let gb = base_bytes / 1_000_000_000;
+
+        Self {
+            bytes: base_bytes,
+            kilobytes: kb,
+            megabytes: mb,
+            gigabytes: gb,
+        }
+    }
+}
+
+fn main() {
+    let prepared_input = match env::args().nth(1) {
+        Some(input) => prepare_input(&input),
+        None => {
+            println!("You have not provided a file size.");
+            return;
+        }
+    };
+
+    let base_bytes = match to_base_bytes(prepared_input.0, prepared_input.1.as_str()) {
+        Ok(b) => b,
+        Err(ParseSizeError::UnknownUnit(u)) => {
+            eprintln!("Unknown unit: {u}");
+            return;
+        }
+        Err(ParseSizeError::Overflow) => {
+            eprintln!("Size too large (overflow)");
+            return;
+        }
+    };
+
+    let size_struct = Sizes::new(base_bytes);
+    println!("{:#?}", size_struct)
+}
+
 // This was originally part of this binary but got outsourced to library_project
 
 // fn prepare_input(s: String) -> (u64, String) {
@@ -78,65 +140,3 @@ use std::fmt;
 //         .checked_mul(unit.multiplier())
 //         .ok_or(ParseSizeError::Overflow)
 // }
-
-fn with_unit(n: u64, u: ByteUnit) -> String {
-    format!("{} {}", n, u.label())
-}
-
-struct Sizes {
-    bytes: u64,
-    kilobytes: u64,
-    megabytes: u64,
-    gigabytes: u64,
-}
-
-impl fmt::Debug for Sizes {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Sizes")
-            .field("bytes", &with_unit(self.bytes, ByteUnit::Bytes))
-            .field("kilobytes", &with_unit(self.kilobytes, ByteUnit::Kilobytes))
-            .field("megabytes", &with_unit(self.megabytes, ByteUnit::Megabytes))
-            .field("gigabytes", &with_unit(self.gigabytes, ByteUnit::Gigabytes))
-            .finish()
-    }
-}
-
-impl Sizes {
-    fn new(base_bytes: u64) -> Self {
-        let kb = base_bytes / 1_000;
-        let mb = base_bytes / 1_000_000;
-        let gb = base_bytes / 1_000_000_000;
-
-        Self {
-            bytes: base_bytes,
-            kilobytes: kb,
-            megabytes: mb,
-            gigabytes: gb,
-        }
-    }
-}
-
-fn main() {
-    let prepared_input = match env::args().nth(1) {
-        Some(input) => prepare_input(&input),
-        None => {
-            println!("You have not provided a file size.");
-            return;
-        }
-    };
-
-    let base_bytes = match to_base_bytes(prepared_input.0, prepared_input.1.as_str()) {
-        Ok(b) => b,
-        Err(ParseSizeError::UnknownUnit(u)) => {
-            eprintln!("Unknown unit: {u}");
-            return;
-        }
-        Err(ParseSizeError::Overflow) => {
-            eprintln!("Size too large (overflow)");
-            return;
-        }
-    };
-
-    let size_struct = Sizes::new(base_bytes);
-    println!("{:#?}", size_struct)
-}
