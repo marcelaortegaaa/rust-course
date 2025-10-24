@@ -1,4 +1,3 @@
-use petgraph::Direction;
 use petgraph::graph::{NodeIndex, UnGraph};
 use std::fmt;
 
@@ -51,23 +50,26 @@ fn main() {
 
     for (i, &node) in fighter_nodes.iter().enumerate() {
         let name = &fighters[i].name;
-        let degree = graph.edges_directed(node, Direction::Outgoing).count() as f32;
-        let closeness = 1.0 / degree;
-        println!("The closeness centrality of {} is {:.2}", name, closeness);
+        let degree = graph.neighbors(node).count() as f32;
+        let degree_centrality = degree / ((graph.node_count() - 1) as f32);
+        println!(
+            "The degree centrality of {} is {:.2}",
+            name, degree_centrality
+        );
 
         // Explanation
         match name.as_str() {
             "Conor McGregor" => println!(
-                "{} has the lowest centrality because he has fought with all other fighters in the network. In this context, a lower centrality value means a higher number of fights.",
+                "{} has the highest degree centrality because he has fought with all other fighters in the network.",
                 name
             ),
             "Dustin Poirier" | "Nate Diaz" => println!(
-                "{} has a centrality of {:.2}, implying they had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
-                name, closeness
+                "{} has a degree centrality of {:.2}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
+                name, degree_centrality
             ),
             "Khabib Nurmagomedov" | "Jose Aldo" => println!(
-                "{} has the highest centrality of {:.2} as they have fought with the least number of fighters.",
-                name, closeness
+                "{} has the lowest centrality of {:.2} as he has fought with the least number of fighters.",
+                name, degree_centrality
             ),
             _ => {}
         }
