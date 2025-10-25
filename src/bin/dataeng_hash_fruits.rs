@@ -1,5 +1,17 @@
+// Generating Unique Fruits with HashSet
+// [X] Generate a user-specified number of random fruits
+// [ ] Track how many times each fruit is generated with another collection
+// [X] Print set of fruits
+
+use clap::Parser;
 use rand::{rng, seq::IndexedRandom};
 use std::collections::HashSet;
+
+#[derive(Parser)]
+struct Args {
+    #[arg(short, long, help = "Number of fruits for set", default_value_t = 10)]
+    number: usize,
+}
 
 fn generate_fruit(n: usize) -> HashSet<&'static str> {
     let mut rng = rng();
@@ -27,7 +39,8 @@ fn generate_fruit(n: usize) -> HashSet<&'static str> {
 }
 
 fn main() {
-    let n = 30;
+    let args: Args = Args::parse();
+    let n = args.number;
     let fruit_set = generate_fruit(n);
 
     println!("Generating {} random fruits...", n);
