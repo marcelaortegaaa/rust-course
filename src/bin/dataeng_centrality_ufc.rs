@@ -1,4 +1,5 @@
 use petgraph::graph::{NodeIndex, UnGraph};
+use std::collections::VecDeque;
 use std::fmt;
 
 #[derive(Debug)]
@@ -22,6 +23,58 @@ impl fmt::Display for Fighter {
 
 fn add_edge(graph: &mut UnGraph<&Fighter, f32>, nodes: &[NodeIndex], a: usize, b: usize) {
     graph.add_edge(nodes[a], nodes[b], 1.0);
+}
+
+fn betweenness<N, E>(g: &UnGraph<N, E>) -> Vec<f64> {
+    let n = g.node_count();
+    let mut cb = vec![0.0; n];
+
+    for s in g.node_indices() {
+        let mut stack = Vec::new();
+        let mut pred = vec![Vec::new(); n];
+        let mut sigma = vec![0.0; n];
+        let mut dist = vec![-1isize; n];
+
+        sigma[s.index()] = 1.0;
+        dist[s.index()] = 0;
+
+        let mut q = VecDeque::new();
+        q.push_back(s);
+
+        while let Some(v) = q.pop_front() {
+            stack.push(v);
+            let dv = dist[v.index()];
+            for w in g.neighbors(v) {
+                if dist[w.index()] < 0 {
+                    dist[w.index()] = dv + 1;
+                    q.push_back(w);
+                }
+                if dist[w.index()] == dv + 1 {
+                    sigma[w.index()] += sigma[v.index()];
+                    pred[w.index()].push(v);
+                }
+            }
+        }
+
+        let mut delta = vec![0.0; n];
+        while let Some(w) = stack.pop() {
+            for &v in &pred[w.index()] {
+                if sigma[w.index()] > 0.0 {
+                    delta[v.index()] +=
+                        (sigma[v.index()] / sigma[w.index()]) * (1.0 + delta[w.index()]);
+                }
+            }
+            if w != s {
+                cb[w.index()] += delta[w.index()];
+            }
+        }
+    }
+
+    // undirected graphs count each pair twice
+    for c in &mut cb {
+        *c *= 0.5;
+    }
+    cb
 }
 
 fn main() {
@@ -48,12 +101,13 @@ fn main() {
     add_edge(&mut graph, &fighter_nodes, 0, 4); // Dustin Poirier vs. Nate Diaz
     add_edge(&mut graph, &fighter_nodes, 2, 4); // Jose Aldo vs. Nate Diaz
 
+    // Degree centrality
     for (i, &node) in fighter_nodes.iter().enumerate() {
         let name = &fighters[i].name;
         let degree = graph.neighbors(node).count() as f32;
         let degree_centrality = degree / ((graph.node_count() - 1) as f32);
         println!(
-            "The degree centrality of {} is {:.2}",
+            "The degree centrality of {} is {:.3}",
             name, degree_centrality
         );
 
@@ -64,15 +118,31 @@ fn main() {
                 name
             ),
             "Dustin Poirier" | "Nate Diaz" => println!(
-                "{} has a degree centrality of {:.2}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
+                "{} has a degree centrality of {:.3}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
                 name, degree_centrality
             ),
             "Khabib Nurmagomedov" | "Jose Aldo" => println!(
-                "{} has the lowest centrality of {:.2} as he has fought with the least number of fighters.",
+                "{} has the lowest centrality of {:.3} as he has fought with the least number of fighters.",
                 name, degree_centrality
             ),
             _ => {}
         }
         println!("-----------------");
+    }
+
+    // Betweenness centrality
+    let mut betweenness_scores = betweenness(&graph);
+    let n = graph.node_count() as f64;
+
+    // Normalise scores
+    if n > 2.0 {
+        let factor = 2.0 / ((n - 1.0) * (n - 2.0));
+        for c in &mut betweenness_scores {
+            *c *= factor;
+        }
+    }
+
+    for (&node, score) in fighter_nodes.iter().zip(betweenness_scores) {
+        println!("{}'s betweenness: {:.3}", graph[node], score);
     }
 }
