@@ -1,6 +1,6 @@
 // Generating Unique Fruits with HashSet
 // [X] Generate a user-specified number of random fruits
-// [ ] Track how many times each fruit is generated with another collection
+// [X] Track how many times each fruit is generated with repetition
 // [X] Print set of fruits
 
 use clap::Parser;
@@ -13,7 +13,7 @@ struct Args {
     number: usize,
 }
 
-fn generate_fruit(n: usize) -> HashSet<&'static str> {
+fn generate_fruits(n: usize) -> HashSet<&'static str> {
     let mut rng = rng();
     let fruits = [
         "Apple",
@@ -38,12 +38,42 @@ fn generate_fruit(n: usize) -> HashSet<&'static str> {
     fruit_set
 }
 
+// fn generate_repeated_fruits(n: usize) -> VecDeque<&'static str> {
+//     let mut rng = rng();
+//     let fruits = [
+//         "Apple",
+//         "Banana",
+//         "Cherry",
+//         "Date",
+//         "Elderberry",
+//         "Fig",
+//         "Grape",
+//         "Honeydew",
+//     ];
+
+//     let mut fruit_set = VecDeque::new();
+//     for _ in 0..n {
+//         let fruit = fruits.choose(&mut rng).cloned().unwrap();
+//         fruit_set.push_back(fruit);
+//     }
+
+//     fruit_set
+// }
+
 fn main() {
     let args: Args = Args::parse();
     let n = args.number;
-    let fruit_set = generate_fruit(n);
+    let fruit_set = generate_fruits(n);
 
-    println!("Generating {} random fruits...", n);
-    println!("Number of unique fruits generated: {}", fruit_set.len());
+    // // Count how many times each fruit is generated with repetition
+    // let mut frequencies = HashMap::new();
+    // for f in &fruit_set {
+    //     let frequency = frequencies.entry(f).or_insert(0);
+    //     *frequency += 1;
+    // }
+    // println!("{frequencies:?}");
+
+    println!("Generating {} random fruits", n);
+    println!("Number of fruits generated: {}", fruit_set.len());
     println!("Fruit set: {:?}", fruit_set);
 }
