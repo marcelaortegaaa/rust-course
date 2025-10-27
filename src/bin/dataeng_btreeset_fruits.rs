@@ -1,5 +1,5 @@
-// [ ] Include ability to remove a fruit from the set
-// [ ] Print fruits in reverse
+// [X] Include ability to remove a fruit from the set
+// [X] Print fruits in reverse
 // [ ] Track how many times each fruit is generated with repetition
 
 use clap::Parser;
@@ -58,4 +58,15 @@ fn main() {
             }
         }
     }
+
+    println!("\nReverse order:");
+
+    for (i, item) in fruit_set.iter().rev().enumerate() {
+        if i + 1 == fruit_set.len() {
+            print!("{item}");
+        } else {
+            print!("{item}, ");
+        }
+    }
+    println!("");
 }
