@@ -1,9 +1,40 @@
+// [ ] Include ability to remove a fruit from the set
+// [ ] Print fruits in reverse
+// [ ] Track how many times each fruit is generated with repetition
+
+use clap::Parser;
+use rand::rng;
 use rand::seq::SliceRandom;
-use rand::thread_rng;
 use std::collections::BTreeSet;
 
+#[derive(Parser)]
+struct Args {
+    #[arg(short, long, help = "Remove fruit from set")]
+    remove: Option<Vec<String>>,
+    #[arg(short, long, help = "Number of fruits for set", default_value_t = 5)]
+    number: usize,
+}
+
+fn create_fruit_set<'a>(n: usize, fruits: &'a Vec<&'a str>) -> BTreeSet<&'a str> {
+    let mut fruit_set = BTreeSet::new();
+
+    for fruit in fruits {
+        fruit_set.insert(fruit.to_owned());
+        if fruit_set.len() >= n {
+            break;
+        }
+    }
+
+    println!("{}: {:?}", n, fruit_set);
+    fruit_set
+}
+
 fn main() {
-    let fruits = vec![
+    let args = Args::parse();
+    let removed_fruit = args.remove;
+    let n = args.number;
+
+    let mut fruits = vec![
         "apple",
         "banana",
         "cherry",
@@ -13,22 +44,18 @@ fn main() {
         "grape",
         "honeydew",
     ];
-    let amounts = [1, 3, 5, 7, 9];
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
+    fruits.shuffle(&mut rng);
 
-    for amount in amounts.iter() {
-        let mut fruit_set = BTreeSet::new();
-        let mut shuffled_fruits = fruits.clone();
-        shuffled_fruits.shuffle(&mut rng);
+    let mut fruit_set = create_fruit_set(n, &fruits);
 
-        for fruit in shuffled_fruits {
-            fruit_set.insert(fruit);
-            if fruit_set.len() >= *amount {
-                break;
+    if let Some(removed) = removed_fruit.as_ref() {
+        for fruit in removed {
+            if fruit_set.remove(fruit.to_lowercase().as_str()) {
+                println!("Removed {} from set", fruit.to_lowercase());
+                println!("New set of {}: {:?}", fruit_set.len(), fruit_set);
             }
         }
-
-        println!("{}: {:?}", amount, fruit_set);
     }
 }
