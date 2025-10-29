@@ -1,11 +1,12 @@
 // [X] Include ability to remove a fruit from the set
 // [X] Print fruits in reverse
-// [ ] Track how many times each fruit is generated with repetition
+// [X] Track how many times each fruit is generated with repetition
 
 use clap::Parser;
+use rand::prelude::IndexedRandom;
 use rand::rng;
 use rand::seq::SliceRandom;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Parser)]
 struct Args {
@@ -24,6 +25,17 @@ fn create_fruit_set<'a>(n: usize, fruits: &'a Vec<&'a str>) -> BTreeSet<&'a str>
             break;
         }
     }
+
+    println!("{}: {:?}", n, fruit_set);
+    fruit_set
+}
+
+fn create_repeated_fruit_set<'a>(n: usize, fruits: &'a Vec<&'a str>) -> Vec<&'a str> {
+    let mut rng = rng(); // There may be a better option than defining rng twice
+
+    let fruit_set = (0..n)
+        .map(|_| fruits.choose(&mut rng).copied().unwrap()) // with replacement
+        .collect();
 
     println!("{}: {:?}", n, fruit_set);
     fruit_set
@@ -49,6 +61,7 @@ fn main() {
     fruits.shuffle(&mut rng);
 
     let mut fruit_set = create_fruit_set(n, &fruits);
+    let repeated_fruit_set = create_repeated_fruit_set(n, &fruits);
 
     if let Some(removed) = removed_fruit.as_ref() {
         for fruit in removed {
@@ -69,4 +82,13 @@ fn main() {
         }
     }
     println!("");
+
+    // Count how many times each fruit is generated with repetition
+    let mut frequencies = BTreeMap::new();
+    for f in &repeated_fruit_set {
+        let frequency = frequencies.entry(f).or_insert(0);
+        *frequency += 1;
+    }
+    println!("Repeated fruit vec: {repeated_fruit_set:?}");
+    println!("Repeated fruit sequences: {frequencies:?}");
 }
