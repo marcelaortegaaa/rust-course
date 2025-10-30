@@ -3,9 +3,7 @@
 // [X] Track how many times each fruit is generated with repetition
 
 use clap::Parser;
-use rand::prelude::IndexedRandom;
-use rand::rng;
-use rand::seq::SliceRandom;
+use rand::{rng, seq::IndexedRandom, seq::SliceRandom};
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Parser)]
