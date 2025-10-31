@@ -1,3 +1,37 @@
+// PageRank algorithm for graphs
+// [X] Allow rank to receive a user's graph (with nodes and connections)
+// [X] Normalize values so they sum to 1
+
+use clap::{ArgAction, Parser};
+
+fn parse_usize_list(s: &str) -> Result<Vec<usize>, String> {
+    s.split(',')
+        .filter(|x| !x.is_empty())
+        .map(|x| x.trim().parse::<usize>().map_err(|e| e.to_string()))
+        .collect()
+}
+
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    /// Graph node as comma-separated links; repeat for each node.
+    #[arg(short,
+        long,
+        help = "Outgoing links for a node",
+        value_parser = parse_usize_list,
+        action = ArgAction::Append)]
+    graph_node: Vec<Vec<usize>>,
+
+    #[arg(short, long, help = "PageRank damping", default_value_t = 0.85)]
+    damping: f64,
+
+    #[arg(short, long, help = "PageRank iterations", default_value_t = 100)]
+    iterations: usize,
+
+    #[arg(short, long, help = "Names for nodes", value_delimiter = ',')]
+    names: Option<Vec<String>>,
+}
+
 // The PageRank struct holds the damping factor and the number of iterations to run the algorithm.
 struct PageRank {
     damping: f64,
@@ -46,6 +80,14 @@ impl PageRank {
             ranks = new_ranks;
         }
 
+        // Normalise
+        let sum: f64 = ranks.iter().sum();
+        if sum > 0.0 {
+            for r in &mut ranks {
+                *r /= sum;
+            }
+        }
+
         // Returns the final PageRank values.
         ranks
     }
@@ -61,17 +103,31 @@ fn main() {
         vec![0, 1], // MLB links to ESPN, NFL
     ];
 
+    let args = Args::parse();
+    let user_graph = args.graph_node;
+
+    let _original_names = vec!["ESPN", "NFL", "NBA", "UFC", "MLB"];
+
     // The names corresponding to the indexes of the websites.
-    let names = vec!["ESPN", "NFL", "NBA", "UFC", "MLB"];
+    let names: Vec<String> = match args.names {
+        Some(n) => n,
+        None => (1..=user_graph.len())
+            .map(|i| format!("Node {}", i))
+            .collect(),
+    };
 
     // Initializes the PageRank struct.
-    let pagerank = PageRank::new(0.85, 100);
+    let pagerank = PageRank::new(args.damping, args.iterations);
 
     // Calculates the PageRank values.
-    let ranks = pagerank.rank(&graph);
+    let _ranks = pagerank.rank(&graph);
+    let user_ranks = pagerank.rank(&user_graph);
 
     // Prints the PageRank values.
-    for (i, rank) in ranks.iter().enumerate() {
+    for (i, rank) in user_ranks.iter().enumerate() {
         println!("The PageRank of {} is {}", names[i], rank);
     }
+
+    let sum: f64 = user_ranks.iter().sum();
+    println!("Sum of PageRank values: {}", sum);
 }
