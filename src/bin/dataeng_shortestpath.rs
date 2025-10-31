@@ -1,6 +1,6 @@
 // Shortest Path algo with Dijkstra
 // [X] Allow usser to specify start and end nodes
-// [ ] Include more landmarks and connections
+// [X] Include more landmarks and connections
 
 use clap::Parser;
 use petgraph::algo::dijkstra;
@@ -63,14 +63,60 @@ fn main() -> Result<(), String> {
     let commerce_square = graph.add_node("Commerce Square");
     let lisbon_cathedral = graph.add_node("Lisbon Cathedral");
 
+    // New locations DLC
+    let ccb = graph.add_node("Belém Cultural Center (CCB)");
+    let maat = graph.add_node("MAAT Museum");
+    let time_out_market = graph.add_node("Time Out Market");
+    let chiado = graph.add_node("Chiado");
+    let bairro_alto = graph.add_node("Bairro Alto");
+    let santa_justa = graph.add_node("Santa Justa Lift");
+    let rossio_square = graph.add_node("Rossio Square");
+    let sao_jorge_castle = graph.add_node("São Jorge Castle");
+    let alfama = graph.add_node("Alfama");
+    let eduardo_vii_park = graph.add_node("Eduardo VII Park");
+    let gulbenkian = graph.add_node("Gulbenkian Museum");
+    let parque_nacoes = graph.add_node("Parque das Nações");
+    let oceanario = graph.add_node("Oceanário de Lisboa");
+    let oriente_station = graph.add_node("Oriente Station");
+
     graph.extend_with_edges([
         (belem_tower, monastery, 1), // The distance from Belem Tower to Jerónimos Monastery is 1 km
-        (belem_tower, lx_factory, 3), // The distance from Belem Tower to LX Factory is 3 km
-        (belem_tower, commerce_square, 7), // The distance from Belem Tower to Commerce Square is 7 km
-        (monastery, lx_factory, 3), // The distance from Jerónimos Monastery to LX Factory is 3 km
-        (monastery, commerce_square, 6), // The distance from Jerónimos Monastery to Commerce Square is 6 km
-        (lx_factory, commerce_square, 5), // The distance from LX Factory to Commerce Square is 5 km
-        (commerce_square, lisbon_cathedral, 1), // The distance from Commerce Square to Lisbon Cathedral is 1 km
+        (belem_tower, lx_factory, 3),
+        (belem_tower, commerce_square, 7),
+        (monastery, lx_factory, 3),
+        (monastery, commerce_square, 6),
+        (lx_factory, commerce_square, 5),
+        (commerce_square, lisbon_cathedral, 1),
+        // New connections
+        (belem_tower, monastery, 1),
+        (belem_tower, lx_factory, 3),
+        (belem_tower, commerce_square, 7),
+        (monastery, lx_factory, 3),
+        (monastery, commerce_square, 6),
+        (lx_factory, commerce_square, 5),
+        (commerce_square, lisbon_cathedral, 1),
+        (belem_tower, ccb, 1),
+        (ccb, monastery, 1),
+        (ccb, maat, 1),
+        (maat, lx_factory, 3),
+        (lx_factory, time_out_market, 3),
+        (time_out_market, commerce_square, 1),
+        (commerce_square, chiado, 1),
+        (chiado, bairro_alto, 1),
+        (chiado, santa_justa, 1),
+        (santa_justa, rossio_square, 1),
+        (lisbon_cathedral, sao_jorge_castle, 1),
+        (sao_jorge_castle, alfama, 1),
+        (alfama, commerce_square, 2),
+        (rossio_square, eduardo_vii_park, 2),
+        (eduardo_vii_park, gulbenkian, 1),
+        (gulbenkian, parque_nacoes, 7),
+        (parque_nacoes, oceanario, 1),
+        (oceanario, oriente_station, 1),
+        (time_out_market, chiado, 1),
+        (bairro_alto, rossio_square, 1),
+        (alfama, lisbon_cathedral, 1),
+        (chiado, rossio_square, 1),
     ]);
 
     let name_index = build_name_index(&graph);
