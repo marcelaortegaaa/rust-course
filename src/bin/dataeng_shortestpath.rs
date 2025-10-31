@@ -1,7 +1,60 @@
+// Shortest Path algo with Dijkstra
+// [X] Allow usser to specify start and end nodes
+// [ ] Include more landmarks and connections
+
+use clap::Parser;
 use petgraph::algo::dijkstra;
 use petgraph::prelude::*;
+use std::collections::HashMap;
 
-fn main() {
+#[derive(Debug, Parser)]
+struct Args {
+    #[arg(short, long, value_name = "ORIGIN", required = true)]
+    origin: String,
+
+    #[arg(short, long, value_name = "DESTINATION", required = true)]
+    destination: String,
+}
+
+fn build_name_index<'a>(graph: &'a Graph<&'a str, u32, Undirected>) -> HashMap<&'a str, NodeIndex> {
+    let mut map = HashMap::new();
+    for i in graph.node_indices() {
+        map.insert(graph[i], i);
+    }
+    map
+}
+
+fn calculate_route(
+    graph: &Graph<&str, u32, Undirected>,
+    index: &HashMap<&str, NodeIndex>,
+    args: &Args,
+) -> Result<(), String> {
+    let origin = *index
+        .get(args.origin.as_str())
+        .ok_or_else(|| format!("Unknown origin: {}", args.origin))?;
+    let destination = *index
+        .get(args.destination.as_str())
+        .ok_or_else(|| format!("Unknown destination: {}", args.destination))?;
+
+    let dist = dijkstra(graph, origin, Some(destination), |e| *e.weight());
+
+    if let Some(d) = dist.get(&destination) {
+        println!(
+            "The shortest distance from {} to {} is {} km",
+            graph[origin], graph[destination], d
+        );
+    } else {
+        println!(
+            "No route found from {} to {}",
+            graph[origin], graph[destination]
+        );
+    }
+    Ok(())
+}
+
+fn main() -> Result<(), String> {
+    let args = Args::parse();
+
     let mut graph = Graph::<&str, u32, Undirected>::new_undirected();
 
     let belem_tower = graph.add_node("Belem Tower");
@@ -20,14 +73,6 @@ fn main() {
         (commerce_square, lisbon_cathedral, 1), // The distance from Commerce Square to Lisbon Cathedral is 1 km
     ]);
 
-    let node_map = dijkstra(&graph, belem_tower, Some(lisbon_cathedral), |e| *e.weight());
-
-    if let Some(distance) = node_map.get(&lisbon_cathedral) {
-        println!(
-            "The shortest distance from Belem Tower to Lisbon Cathedral is {} km",
-            distance
-        );
-    } else {
-        println!("No route found from Belem Tower to Lisbon Cathedral.");
-    }
+    let name_index = build_name_index(&graph);
+    calculate_route(&graph, &name_index, &args)
 }
