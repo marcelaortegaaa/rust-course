@@ -1,6 +1,7 @@
 // PageRank algorithm for graphs
 // [X] Allow rank to receive a user's graph (with nodes and connections)
 // [X] Normalize values so they sum to 1
+// Maybe should have used petgraph. Moving on.
 
 use clap::{ArgAction, Parser};
 
