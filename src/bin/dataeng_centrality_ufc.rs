@@ -1,3 +1,4 @@
+use petgraph::algo::astar;
 use petgraph::graph::{NodeIndex, UnGraph};
 use std::collections::VecDeque;
 use std::fmt;
@@ -212,7 +213,42 @@ fn eigenvector_centrality(g: &UnGraph<&Fighter, f32>) {
     }
 }
 
-fn main() {
+fn shortest_path(
+    g: &UnGraph<&Fighter, f32>,
+    origin_name: &str,
+    dest_name: &str,
+) -> Result<(), String> {
+    let find = |name: &str| -> Option<NodeIndex> { g.node_indices().find(|&v| g[v].name == name) };
+    let start = find(origin_name).ok_or_else(|| format!("Unknown fighter: {}", origin_name))?;
+    let goal = find(dest_name).ok_or_else(|| format!("Unknown fighter: {}", dest_name))?;
+
+    if start == goal {
+        println!("Origin and destination fighter is the same: {}", g[start]);
+        return Ok(());
+    }
+
+    // A* with zero heuristic == Dijkstra, but returns the path
+    // Prints "A -> B -> C" and the number of hops.
+    if let Some((cost, path)) = astar(
+        g,
+        start,
+        |n| n == goal,
+        |_| 1.0f32, // each fight costs 1 hop
+        |_| 0.0f32, // no heuristic available → zero
+    ) {
+        let names: Vec<String> = path.iter().map(|&n| g[n].to_string()).collect();
+        println!(
+            "It takes {} fights to get from {origin_name} to {dest_name}:\n{}",
+            cost,
+            names.join(" -> ")
+        );
+        Ok(())
+    } else {
+        Err(format!("No route found from {} to {}", g[start], g[goal]))
+    }
+}
+
+fn main() -> Result<(), String> {
     let mut graph = UnGraph::new_undirected();
 
     let fighters = [
@@ -268,6 +304,7 @@ fn main() {
         (14, 7),  // Cerrone vs Gaethje
         (0, 15),  // Poirier vs Johnson
         (2, 11),  // Aldo vs Volkanovski
+                  // (10, 3), Makhachev vs McGregor fight to see how values change
     ];
 
     // Bulk-add edges
@@ -280,4 +317,8 @@ fn main() {
     betweenness(&graph);
     println!("----------");
     eigenvector_centrality(&graph);
+    println!("----------");
+    shortest_path(&graph, "Alexander Volkanovski", "Khabib Nurmagomedov")?;
+
+    Ok(())
 }
