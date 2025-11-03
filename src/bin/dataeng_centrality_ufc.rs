@@ -25,7 +25,41 @@ fn add_edge(graph: &mut UnGraph<&Fighter, f32>, nodes: &[NodeIndex], a: usize, b
     graph.add_edge(nodes[a], nodes[b], 1.0);
 }
 
-fn betweenness<N, E>(g: &UnGraph<N, E>) -> Vec<f64> {
+fn degree_centrality(
+    graph: &mut UnGraph<&Fighter, f32>,
+    fighter_nodes: &Vec<NodeIndex>,
+    fighters: &[Fighter],
+) {
+    for (i, &node) in fighter_nodes.iter().enumerate() {
+        let name = &fighters[i].name;
+        let degree = graph.neighbors(node).count() as f32;
+        let degree_centrality = degree / ((graph.node_count() - 1) as f32);
+        println!(
+            "The degree centrality of {} is {:.3}",
+            name, degree_centrality
+        );
+
+        // // Explanation
+        // match name.as_str() {
+        //     "Conor McGregor" => println!(
+        //         "{} has the highest degree centrality because he has fought with all other fighters in the network.",
+        //         name
+        //     ),
+        //     "Dustin Poirier" | "Nate Diaz" => println!(
+        //         "{} has a degree centrality of {:.3}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
+        //         name, degree_centrality
+        //     ),
+        //     "Khabib Nurmagomedov" | "Jose Aldo" => println!(
+        //         "{} has the lowest centrality of {:.3} as he has fought with the least number of fighters.",
+        //         name, degree_centrality
+        //     ),
+        //     _ => {}
+        // }
+        // println!("-----------------");
+    }
+}
+
+fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
     let n = g.node_count();
     let mut cb = vec![0.0; n];
 
@@ -70,11 +104,23 @@ fn betweenness<N, E>(g: &UnGraph<N, E>) -> Vec<f64> {
         }
     }
 
-    // undirected graphs count each pair twice
+    // Normalise
     for c in &mut cb {
         *c *= 0.5;
     }
-    cb
+
+    if n > 2 {
+        let factor = 2.0 / ((n as f64 - 1.0) * (n as f64 - 2.0));
+        for c in &mut cb {
+            *c *= factor;
+        }
+    }
+
+    // Print results
+    println!("Betweenness centrality scores:");
+    for node in g.node_indices() {
+        println!("{}'s betweenness: {:.3}", g[node], cb[node.index()]);
+    }
 }
 
 fn main() {
@@ -101,48 +147,7 @@ fn main() {
     add_edge(&mut graph, &fighter_nodes, 0, 4); // Dustin Poirier vs. Nate Diaz
     add_edge(&mut graph, &fighter_nodes, 2, 4); // Jose Aldo vs. Nate Diaz
 
-    // Degree centrality
-    for (i, &node) in fighter_nodes.iter().enumerate() {
-        let name = &fighters[i].name;
-        let degree = graph.neighbors(node).count() as f32;
-        let degree_centrality = degree / ((graph.node_count() - 1) as f32);
-        println!(
-            "The degree centrality of {} is {:.3}",
-            name, degree_centrality
-        );
-
-        // Explanation
-        match name.as_str() {
-            "Conor McGregor" => println!(
-                "{} has the highest degree centrality because he has fought with all other fighters in the network.",
-                name
-            ),
-            "Dustin Poirier" | "Nate Diaz" => println!(
-                "{} has a degree centrality of {:.3}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
-                name, degree_centrality
-            ),
-            "Khabib Nurmagomedov" | "Jose Aldo" => println!(
-                "{} has the lowest centrality of {:.3} as he has fought with the least number of fighters.",
-                name, degree_centrality
-            ),
-            _ => {}
-        }
-        println!("-----------------");
-    }
-
-    // Betweenness centrality
-    let mut betweenness_scores = betweenness(&graph);
-    let n = graph.node_count() as f64;
-
-    // Normalise scores
-    if n > 2.0 {
-        let factor = 2.0 / ((n - 1.0) * (n - 2.0));
-        for c in &mut betweenness_scores {
-            *c *= factor;
-        }
-    }
-
-    for (&node, score) in fighter_nodes.iter().zip(betweenness_scores) {
-        println!("{}'s betweenness: {:.3}", graph[node], score);
-    }
+    degree_centrality(&mut graph, &fighter_nodes, &fighters);
+    println!("----------");
+    betweenness(&graph);
 }
