@@ -30,39 +30,60 @@ fn degree_centrality(
     fighter_nodes: &Vec<NodeIndex>,
     fighters: &[Fighter],
 ) {
-    for (i, &node) in fighter_nodes.iter().enumerate() {
-        let name = &fighters[i].name;
-        let degree = graph.neighbors(node).count() as f32;
-        let degree_centrality = degree / ((graph.node_count() - 1) as f32);
-        println!(
-            "The degree centrality of {} is {:.3}",
-            name, degree_centrality
-        );
+    let mut scores: Vec<(String, f32)> = fighter_nodes
+        .iter()
+        .enumerate()
+        .map(|(i, &node)| {
+            let name = fighters[i].name.clone();
+            let degree = graph.neighbors(node).count() as f32;
+            let degree_centrality = degree / ((graph.node_count() - 1) as f32);
+            (name, degree_centrality)
+        })
+        .collect();
 
-        // // Explanation
-        // match name.as_str() {
-        //     "Conor McGregor" => println!(
-        //         "{} has the highest degree centrality because he has fought with all other fighters in the network.",
-        //         name
-        //     ),
-        //     "Dustin Poirier" | "Nate Diaz" => println!(
-        //         "{} has a degree centrality of {:.3}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
-        //         name, degree_centrality
-        //     ),
-        //     "Khabib Nurmagomedov" | "Jose Aldo" => println!(
-        //         "{} has the lowest centrality of {:.3} as he has fought with the least number of fighters.",
-        //         name, degree_centrality
-        //     ),
-        //     _ => {}
-        // }
-        // println!("-----------------");
+    // Sort from highest to lowest
+    scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+    println!("Degree Centrality (highest → lowest):");
+    for (name, score) in scores {
+        println!("{:<25} {:.3}", name, score);
     }
+
+    // for (i, &node) in fighter_nodes.iter().enumerate() {
+    //     let name = &fighters[i].name;
+    //     let degree = graph.neighbors(node).count() as f32;
+    //     let degree_centrality = degree / ((graph.node_count() - 1) as f32);
+    //     println!(
+    //         "The degree centrality of {} is {:.3}",
+    //         name, degree_centrality
+    //     );
+
+    // // Explanation
+    // match name.as_str() {
+    //     "Conor McGregor" => println!(
+    //         "{} has the highest degree centrality because he has fought with all other fighters in the network.",
+    //         name
+    //     ),
+    //     "Dustin Poirier" | "Nate Diaz" => println!(
+    //         "{} has a degree centrality of {:.3}, implying he had less fights compared to Conor McGregor but more than Khabib Nurmagomedov and Jose Aldo.",
+    //         name, degree_centrality
+    //     ),
+    //     "Khabib Nurmagomedov" | "Jose Aldo" => println!(
+    //         "{} has the lowest centrality of {:.3} as he has fought with the least number of fighters.",
+    //         name, degree_centrality
+    //     ),
+    //     _ => {}
+    // }
+    // println!("-----------------");
 }
 
 fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
-    let n = g.node_count();
-    let mut cb = vec![0.0; n];
+    use std::cmp::Ordering;
 
+    let n = g.node_count();
+    let mut cb = vec![0.0f64; n];
+
+    // Brandes betweenness (unweighted, undirected)
     for s in g.node_indices() {
         let mut stack = Vec::new();
         let mut pred = vec![Vec::new(); n];
@@ -104,11 +125,12 @@ fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
         }
     }
 
-    // Normalise
+    // Undirected graphs count each pair twice
     for c in &mut cb {
         *c *= 0.5;
     }
 
+    // Normalise
     if n > 2 {
         let factor = 2.0 / ((n as f64 - 1.0) * (n as f64 - 2.0));
         for c in &mut cb {
@@ -116,10 +138,16 @@ fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
         }
     }
 
-    // Print results
-    println!("Betweenness centrality scores:");
-    for node in g.node_indices() {
-        println!("Betweenness of {}: {:.3}", g[node], cb[node.index()]);
+    let mut ranking: Vec<(String, f64)> = g
+        .node_indices()
+        .map(|node| (g[node].to_string(), cb[node.index()]))
+        .collect();
+
+    ranking.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+
+    println!("Betweenness Centrality (highest → lowest):");
+    for (name, score) in ranking {
+        println!("{:<25} {:.3}", name, score);
     }
 }
 
