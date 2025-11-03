@@ -1,4 +1,4 @@
-pub const TWITTER_USERNAMES: [&str; 140] = [
+pub const TWITTER_USERNAMES: [&str; 156] = [
     "blackmattersus",
     "bleepthepolice",
     "jenn_abrams",
@@ -140,4 +140,20 @@ pub const TWITTER_USERNAMES: [&str; 140] = [
     "journalist3",
     "journalist2",
     "journalist3",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
+    "journalist4",
+    "journalist5",
 ];

@@ -1,3 +1,7 @@
+// Community detection
+// [X] Expand dataset and analyse changes
+// [X] Print largest community
+
 use library_project::community_detection::TWITTER_USERNAMES;
 use petgraph::algo::kosaraju_scc;
 use petgraph::prelude::*;
@@ -27,12 +31,24 @@ fn main() {
 
     // Use the Kosaraju's algorithm to detect strongly connected components
     let scc = kosaraju_scc(&graph);
-    for component in scc {
+    for component in &scc {
         println!("{} nodes in community discovered", component.len());
-        let usernames: Vec<&str> = component
-            .iter()
-            .map(|&node_index| graph[node_index])
-            .collect();
-        println!("{:?}", usernames);
+        // let usernames: Vec<&str> = component
+        //     .iter()
+        //     .map(|&node_index| graph[node_index])
+        //     .collect();
+        // println!("{:?}", usernames);
     }
+
+    let biggest_community = &scc.iter().max_by_key(|c| c.len()).unwrap();
+    let usernames: Vec<&str> = biggest_community
+        .iter()
+        .map(|&node_index| graph[node_index])
+        .collect();
+
+    println!(
+        "The biggest community has {} nodes: {:?}",
+        biggest_community.len(),
+        usernames
+    );
 }
