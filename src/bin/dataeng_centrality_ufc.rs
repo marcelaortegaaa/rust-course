@@ -77,7 +77,7 @@ fn degree_centrality(
     // println!("-----------------");
 }
 
-fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
+fn betweenness(g: &UnGraph<&Fighter, f32>) {
     use std::cmp::Ordering;
 
     let n = g.node_count();
@@ -151,6 +151,67 @@ fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
     }
 }
 
+fn eigenvector_centrality(g: &UnGraph<&Fighter, f32>) {
+    let tolerance: f64 = 1e-9;
+    let max_iters: usize = 100;
+
+    let mut x = vec![1.0f64; g.node_count()]; // initial vector
+    let mut y = vec![0.0f64; g.node_count()];
+
+    for _ in 0..max_iters {
+        // y = A * x
+        for i in 0..g.node_count() {
+            y[i] = 0.0;
+        }
+        for v in g.node_indices() {
+            let vi = v.index();
+            for w in g.neighbors(v) {
+                y[vi] += x[w.index()];
+            }
+        }
+        // normalize y (L2)
+        let norm = y.iter().map(|t| t * t).sum::<f64>().sqrt();
+        if norm == 0.0 {
+            break;
+        }
+        for i in 0..g.node_count() {
+            y[i] /= norm;
+        }
+
+        // check convergence
+        let diff = y
+            .iter()
+            .zip(&x)
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0, f64::max);
+        x.clone_from_slice(&y);
+        if diff < tolerance {
+            break;
+        }
+    }
+
+    // Normalise
+    let s: f64 = x.iter().sum();
+    if s > 0.0 {
+        for xi in &mut x {
+            *xi /= s;
+        }
+    }
+
+    // Print
+    let mut ranking: Vec<(String, f64)> = g
+        .node_indices()
+        .map(|v| (g[v].to_string(), x[v.index()]))
+        .collect();
+
+    ranking.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+    println!("Eigenvector Centrality (highest → lowest):");
+    for (name, score) in ranking {
+        println!("{:<25} {:.3}", name, score);
+    }
+}
+
 fn main() {
     let mut graph = UnGraph::new_undirected();
 
@@ -217,4 +278,6 @@ fn main() {
     degree_centrality(&mut graph, &fighter_nodes, &fighters);
     println!("----------");
     betweenness(&graph);
+    println!("----------");
+    eigenvector_centrality(&graph);
 }
