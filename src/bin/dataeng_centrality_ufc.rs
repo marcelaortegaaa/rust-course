@@ -119,7 +119,7 @@ fn betweenness<N: fmt::Display, E>(g: &UnGraph<N, E>) {
     // Print results
     println!("Betweenness centrality scores:");
     for node in g.node_indices() {
-        println!("{}'s betweenness: {:.3}", g[node], cb[node.index()]);
+        println!("Betweenness of {}: {:.3}", g[node], cb[node.index()]);
     }
 }
 
@@ -127,11 +127,22 @@ fn main() {
     let mut graph = UnGraph::new_undirected();
 
     let fighters = [
-        Fighter::new("Dustin Poirier"),
-        Fighter::new("Khabib Nurmagomedov"),
-        Fighter::new("Jose Aldo"),
-        Fighter::new("Conor McGregor"),
-        Fighter::new("Nate Diaz"),
+        Fighter::new("Dustin Poirier"),        // 0
+        Fighter::new("Khabib Nurmagomedov"),   // 1
+        Fighter::new("Jose Aldo"),             // 2
+        Fighter::new("Conor McGregor"),        // 3
+        Fighter::new("Nate Diaz"),             // 4
+        Fighter::new("Max Holloway"),          // 5
+        Fighter::new("Tony Ferguson"),         // 6
+        Fighter::new("Justin Gaethje"),        // 7
+        Fighter::new("Michael Chandler"),      // 8
+        Fighter::new("Charles Oliveira"),      // 9
+        Fighter::new("Islam Makhachev"),       // 10
+        Fighter::new("Alexander Volkanovski"), // 11
+        Fighter::new("Rafael dos Anjos"),      // 12
+        Fighter::new("Eddie Alvarez"),         // 13
+        Fighter::new("Donald Cerrone"),        // 14
+        Fighter::new("Michael Johnson"),       // 15
     ];
 
     let fighter_nodes: Vec<NodeIndex> = fighters
@@ -139,13 +150,41 @@ fn main() {
         .map(|fighter| graph.add_node(fighter))
         .collect();
 
-    add_edge(&mut graph, &fighter_nodes, 0, 1); // Dustin Poirier vs. Khabib Nurmagomedov
-    add_edge(&mut graph, &fighter_nodes, 1, 3); // Khabib Nurmagomedov vs. Conor McGregor
-    add_edge(&mut graph, &fighter_nodes, 3, 0); // Conor McGregor vs. Dustin Poirier
-    add_edge(&mut graph, &fighter_nodes, 3, 2); // Conor McGregor vs. Jose Aldo
-    add_edge(&mut graph, &fighter_nodes, 3, 4); // Conor McGregor vs. Nate Diaz
-    add_edge(&mut graph, &fighter_nodes, 0, 4); // Dustin Poirier vs. Nate Diaz
-    add_edge(&mut graph, &fighter_nodes, 2, 4); // Jose Aldo vs. Nate Diaz
+    let fights: &[(usize, usize)] = &[
+        // Original seven fights
+        (0, 1), // Poirier vs Khabib
+        (1, 3), // Khabib vs McGregor
+        (3, 0), // McGregor vs Poirier
+        (3, 2), // McGregor vs Aldo
+        (3, 4), // McGregor vs Diaz
+        (0, 4), // Poirier vs Diaz
+        (2, 4), // Aldo vs Diaz
+        // DLC
+        (5, 3),   // Holloway vs McGregor
+        (5, 11),  // Holloway vs Volkanovski
+        (5, 2),   // Holloway vs Aldo
+        (5, 0),   // Holloway vs Poirier
+        (6, 7),   // Ferguson vs Gaethje
+        (7, 8),   // Gaethje vs Chandler
+        (7, 9),   // Gaethje vs Oliveira
+        (7, 15),  // Gaethje vs Johnson
+        (9, 8),   // Oliveira vs Chandler
+        (10, 9),  // Makhachev vs Oliveira
+        (12, 13), // RDA vs Alvarez
+        (12, 14), // RDA vs Cerrone
+        (12, 4),  // RDA vs Diaz
+        (13, 3),  // Alvarez vs McGregor
+        (13, 0),  // Alvarez vs Poirier
+        (14, 4),  // Cerrone vs Diaz
+        (14, 7),  // Cerrone vs Gaethje
+        (0, 15),  // Poirier vs Johnson
+        (2, 11),  // Aldo vs Volkanovski
+    ];
+
+    // Bulk-add edges
+    for &(a, b) in fights {
+        add_edge(&mut graph, &fighter_nodes, a, b);
+    }
 
     degree_centrality(&mut graph, &fighter_nodes, &fighters);
     println!("----------");
