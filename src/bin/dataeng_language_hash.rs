@@ -30,7 +30,16 @@ fn word_counter(reader: BufReader<File>) -> io::Result<Vec<(String, u32)>> {
     }
 
     let mut result: Vec<(String, u32)> = map.into_iter().collect();
+
+    // Sort by counts
     result.sort_by(|a, b| b.1.cmp(&a.1));
+
+    // Sort alphabetically
+    // result.sort_by(|a, b| a.0.cmp(&b.0));
+
+    for (k, v) in &result {
+        println!("{k}: {v}");
+    }
 
     Ok(result)
 }
@@ -43,8 +52,7 @@ fn set_file<P: AsRef<Path>>(path: P) -> io::Result<BufReader<File>> {
 fn main() -> io::Result<()> {
     let args = Args::parse();
     let reader = set_file(args.path)?;
-    let counted = word_counter(reader)?;
+    word_counter(reader)?;
 
-    println!("{counted:?}");
     Ok(())
 }
