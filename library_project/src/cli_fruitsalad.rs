@@ -7,16 +7,16 @@ pub fn create_fruit_salad(
     picked_fruits: Vec<String>,
 ) -> Vec<String> {
     let mut fruits = vec![
-        "Arbutus".to_string(),
-        "Loquat".to_string(),
-        "Strawberry Tree Berry".to_string(),
-        "Pomegranate".to_string(),
-        "Fig".to_string(),
-        "Cherry".to_string(),
-        "Orange".to_string(),
-        "Pear".to_string(),
-        "Peach".to_string(),
-        "Apple".to_string(),
+        "arbutus".to_string(),
+        "loquat".to_string(),
+        "strawberry".to_string(),
+        "pomegranate".to_string(),
+        "fig".to_string(),
+        "cherry".to_string(),
+        "orange".to_string(),
+        "pear".to_string(),
+        "peach".to_string(),
+        "apple".to_string(),
     ];
 
     fruits.append(add_fruits);
