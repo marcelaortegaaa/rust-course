@@ -1,5 +1,5 @@
 use rand::rng;
-use rand::seq::SliceRandom;
+use rand::seq::{IndexedRandom, SliceRandom};
 
 pub fn create_fruit_salad(
     add_fruits: &mut Vec<String>,
@@ -32,4 +32,22 @@ pub fn create_fruit_salad(
 
     fruits.sort();
     fruits
+}
+
+pub fn add_surprise(surprise: bool) -> String {
+    let mut rng = rng();
+    let surprise_list = [
+        "syrup".to_string(),
+        "ice scream".to_string(),
+        "cheese".to_string(),
+        "chocolate".to_string(),
+    ];
+
+    let s = if surprise {
+        surprise_list.choose(&mut rng).unwrap()
+    } else {
+        ""
+    };
+
+    s.to_string()
 }
