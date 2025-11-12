@@ -41,7 +41,7 @@ Decrypted message: Off to the bunker. Every person for themselves
 */
 
 use clap::Parser;
-use decoder_ring::print_stats_analysis;
+use library_project::decoder_ring;
 
 /// CLI tool to reverse engineer a Caesar cipher
 #[derive(Parser, Debug)]
@@ -65,7 +65,7 @@ fn main() {
     let args = Args::parse();
     //stats
     if args.stats {
-        print_stats_analysis(&args.message);
+        decoder_ring::print_stats_analysis(&args.message);
     }
     //guess
     if args.guess {
