@@ -1,5 +1,7 @@
-//! This library contains utils for normalizing inputs
-//! The function available turns Strings into tuples that separate value and unit.
+//! This library contains all the utils used in the exercises
+//!
+//! It started as a library just for normalizing inputs, now it contains modules for a command line salad, algorithms for community detection, and a decoder for caesar ciphers.
+//! This function turns Strings into tuples that separate value and unit.
 //! # Example
 //! ```
 //! use library_project::prepare_input;
@@ -10,6 +12,7 @@
 pub mod byte_unit;
 pub mod cli_fruitsalad;
 pub mod community_detection;
+pub mod decoder_ring;
 
 /// This function takes a String and normalizes it into a tuple with an unsigned integer and a lowercase String.
 /// It's meant to be used on strings that contain a value and a unit.
