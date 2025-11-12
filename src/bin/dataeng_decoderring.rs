@@ -40,37 +40,54 @@ Decrypted message: Off to the bunker. Every person for themselves
 
 */
 
-use clap::Parser;
+use clap::{ArgGroup, Parser};
 use library_project::decoder_ring;
 
 /// CLI tool to reverse engineer a Caesar cipher
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(
+    author,
+    version,
+    about = "Decode a message or a file",
+    group(
+        ArgGroup::new("input")
+            .args(["message", "file"])
+            .required(true)
+            .multiple(false)
+    )
+)]
 struct Args {
-    /// The message to decrypt
-    #[arg(short, long)]
-    message: String,
+    #[arg(short, long, help = "Message to decrypt", conflicts_with = "file")]
+    message: Option<String>,
 
-    //statistical information about the message
-    #[arg(short, long)]
+    #[arg(short, long, help = "File to decrypt", conflicts_with = "message")]
+    file: Option<String>,
+
+    #[arg(short, long, help = "Statistical information about the message")]
     stats: bool,
 
-    //guess the shift
-    #[arg(short, long)]
+    #[arg(short, long, help = "Guess the shift")]
     guess: bool,
 }
 
-// run it
 fn main() {
     let args = Args::parse();
-    //stats
+
+    let encrypted_text = match (args.message, args.file) {
+        (Some(m), None) => m,
+        (None, Some(f)) => std::fs::read_to_string(f).expect("Could not read file"),
+        _ => unreachable!("Pass either a vector or a sentence"),
+    };
+
+    println!("{}", encrypted_text);
+
     if args.stats {
-        decoder_ring::print_stats_analysis(&args.message);
+        decoder_ring::print_stats_analysis(&encrypted_text);
     }
-    //guess
+
     if args.guess {
         let (depth, best_shift, decrypted, max_score) =
-            decoder_ring::guess_shift(&args.message, 26);
+            decoder_ring::guess_shift(&encrypted_text, 26);
         println!(
             "Best shift: {} (out of {}), score: {}",
             best_shift, depth, max_score

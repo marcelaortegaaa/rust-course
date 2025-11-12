@@ -48,7 +48,7 @@ pub fn print_stats_analysis(text: &str) {
     let stats = stats_analysis(text);
     for (letter, count, freq, eng_freq, eng_freq_diff) in stats {
         println!(
-            "{}: {} ({}%), English Freq: {} ({}%)",
+            "{}: {} ({:.3}%), English Freq: {} ({:.3}%)",
             letter,
             count,
             freq,
@@ -83,9 +83,10 @@ Accepts:
  * text: the message to decrypt
  * depth: the number of shifts to try
 Returns:
-   * depth: the number of shifts to tried
+   * depth: the number of shifts tried
    * shift: the most likely shift
    * decrypted: the decrypted message
+   * max score:
 */
 
 pub fn guess_shift(text: &str, depth: u8) -> (u8, u8, String, f32) {
