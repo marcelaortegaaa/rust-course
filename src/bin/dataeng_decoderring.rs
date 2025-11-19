@@ -68,6 +68,9 @@ struct Args {
 
     #[arg(short, long, help = "Guess the shift")]
     guess: bool,
+
+    #[arg(short, long, help = "Guess the shift")]
+    altguess: bool,
 }
 
 fn main() {
@@ -93,5 +96,7 @@ fn main() {
             best_shift, depth, max_score
         );
         println!("Decrypted message: {}", decrypted);
+    } else if args.altguess {
+        decoder_ring::alternate_guess(&encrypted_text);
     }
 }
