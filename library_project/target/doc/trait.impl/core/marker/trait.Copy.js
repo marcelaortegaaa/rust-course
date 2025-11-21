@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["library_project",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.89.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"library_project/byte_unit/enum.ByteUnit.html\" title=\"enum library_project::byte_unit::ByteUnit\">ByteUnit</a>"]]],["library_project",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.89.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"library_project/enum.ByteUnit.html\" title=\"enum library_project::ByteUnit\">ByteUnit</a>"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[304,284]}
