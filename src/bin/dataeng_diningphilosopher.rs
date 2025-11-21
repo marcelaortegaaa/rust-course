@@ -1,30 +1,6 @@
-/*
-* The dining philosophers problem involves multiple threads needing
-* synchronized access to shared resources, risking deadlock.
-*
-* This code models philosophers as threads and forks as shared Mutex<()>
-* wrapped in Arc for thread-safe reference counting.
-*
-* To prevent deadlock from a "deadly embrace" of waiting for neighboring
-* forks, philosophers acquire lower numbered forks first. This breaks
-* symmetry and avoids circular waiting.
-*
-* The Mutexes provide exclusive fork access. The Arc allows sharing forks
-* between philosophers.
-*
-* The simulation prints start time, eating duration, and total time for
-* all philosophers. Total time approximately equals philosophers divided
-* by forks, as that number can eat concurrently.
-*
-* Key techniques:
-* - Used Mutex<()> to represent exclusive fork access
-* - Wrapped in Arc to share Mutexes between threads
-* - Numbered philosophers and acquire lower fork first
-* - Prints timing metrics for simulation
-*/
-
 // Why do they eat with two forks? What?
 
+use parking_lot::FairMutex;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -32,7 +8,7 @@ use std::time::{Duration, Instant};
 
 struct Fork {
     id: u32,
-    mutex: Mutex<()>,
+    mutex: FairMutex<()>,
 }
 
 struct Philosopher {
@@ -64,10 +40,10 @@ impl Philosopher {
         let wait_start = Instant::now();
 
         // Try to acquire forks
-        let _first_guard = self.left_fork.mutex.lock().unwrap();
+        let _first_guard = self.left_fork.mutex.lock();
         println!("{} picked up fork {}.", self.name, self.left_fork.id);
 
-        let _second_guard = self.right_fork.mutex.lock().unwrap();
+        let _second_guard = self.right_fork.mutex.lock();
         println!("{} picked up fork {}.", self.name, self.right_fork.id);
 
         // Record how long we waited for forks
@@ -87,9 +63,9 @@ impl Philosopher {
         println!("{} put down fork {}.", self.name, self.right_fork.id);
     }
 
-    fn think(&self) {
-        println!("{} is thinking.", self.name);
-        thread::sleep(Duration::from_millis(100)); // Thinking is faster than eating
+    fn digest(&self) {
+        println!("{} is digesting.", self.name);
+        thread::sleep(Duration::from_millis(100)); // Digesting is faster than eating
     }
 }
 
@@ -156,9 +132,10 @@ impl TableStats {
         println!("Total simulation time: {:.2?}", total_time);
         println!();
 
-        // Collect stats for analysis
         let mut eat_counts: Vec<usize> = Vec::new();
-        let mut wait_times: Vec<Duration> = Vec::new();
+        let mut total_wait_times: Vec<Duration> = Vec::new();
+        let mut avg_wait_times: Vec<Duration> = Vec::new(); // NEW
+        let mut longest_waits: Vec<Duration> = Vec::new(); // NEW
 
         println!(
             "{:<20} {:>8} {:>12} {:>12} {:>12}",
@@ -183,26 +160,119 @@ impl TableStats {
             );
 
             eat_counts.push(philosopher_stats.times_eaten);
-            wait_times.push(philosopher_stats.total_wait_time);
+            total_wait_times.push(philosopher_stats.total_wait_time);
+            avg_wait_times.push(avg_wait); // Collect avg_wait!
+            longest_waits.push(philosopher_stats.longest_wait); // Collect longest!
         }
 
         println!("\n{:=<70}", "");
         println!("FAIRNESS ANALYSIS");
         println!("{:=<70}", "");
 
+        // Meal count analysis (it' always all 10)
         if !eat_counts.is_empty() {
             let total_meals: usize = eat_counts.iter().sum();
             let max_meals = *eat_counts.iter().max().unwrap();
             let min_meals = *eat_counts.iter().min().unwrap();
             let avg_meals = total_meals as f64 / eat_counts.len() as f64;
 
-            println!("Total meals served: {}", total_meals);
-            println!("Average meals per philosopher: {:.2}", avg_meals);
-            println!("Most meals by one philosopher: {}", max_meals);
-            println!("Least meals by one philosopher: {}", min_meals);
+            println!("MEAL COUNT DISTRIBUTION:");
+            println!("  Total meals served: {}", total_meals);
+            println!("  Average meals per philosopher: {:.2}", avg_meals);
+            println!("  Most meals by one philosopher: {}", max_meals);
+            println!("  Least meals by one philosopher: {}", min_meals);
+            println!();
+        }
+
+        // Total wait time analysis
+        if !total_wait_times.is_empty() {
+            let total_wait_sum: Duration = total_wait_times.iter().sum();
+            let max_total_wait = *total_wait_times.iter().max().unwrap();
+            let min_total_wait = *total_wait_times.iter().min().unwrap();
+            let avg_total_wait = total_wait_sum / total_wait_times.len() as u32;
+
+            println!("TOTAL WAIT TIME DISTRIBUTION:");
+            println!("  Maximum total wait: {:.2?}", max_total_wait);
+            println!("  Minimum total wait: {:.2?}", min_total_wait);
+            println!("  Average total wait: {:.2?}", avg_total_wait);
             println!(
-                "Meal distribution ratio (max/min): {:.2}",
-                max_meals as f64 / min_meals.max(1) as f64
+                "  Range (max - min): {:.2?}",
+                max_total_wait - min_total_wait
+            );
+
+            let wait_ratio = max_total_wait.as_secs_f64() / min_total_wait.as_secs_f64().max(0.001);
+            println!("  Wait time ratio (max/min): {:.2}x", wait_ratio);
+
+            // Stdev for total wait times
+            let avg_wait_secs = avg_total_wait.as_secs_f64();
+            let variance: f64 = total_wait_times
+                .iter()
+                .map(|&wait| {
+                    let diff = wait.as_secs_f64() - avg_wait_secs;
+                    diff * diff
+                })
+                .sum::<f64>()
+                / total_wait_times.len() as f64;
+            let std_dev = variance.sqrt();
+            println!("  Standard deviation: {:.2}s", std_dev);
+            println!();
+        }
+
+        // Average wait time analysis
+        if !avg_wait_times.is_empty() {
+            let max_avg_wait = *avg_wait_times.iter().max().unwrap();
+            let min_avg_wait = *avg_wait_times.iter().min().unwrap();
+            let overall_avg_wait: Duration =
+                avg_wait_times.iter().sum::<Duration>() / avg_wait_times.len() as u32;
+
+            println!("AVERAGE WAIT TIME PER MEAL:");
+            println!("  Highest average wait: {:.2?}", max_avg_wait);
+            println!("  Lowest average wait: {:.2?}", min_avg_wait);
+            println!("  Overall average wait: {:.2?}", overall_avg_wait);
+            println!("  Range (max - min): {:.2?}", max_avg_wait - min_avg_wait);
+
+            let avg_wait_ratio = max_avg_wait.as_secs_f64() / min_avg_wait.as_secs_f64().max(0.001);
+            println!("  Average wait ratio (max/min): {:.2}x", avg_wait_ratio);
+
+            // Stdev for average wait times
+            let mean_avg_wait = overall_avg_wait.as_secs_f64();
+            let variance: f64 = avg_wait_times
+                .iter()
+                .map(|&wait| {
+                    let diff = wait.as_secs_f64() - mean_avg_wait;
+                    diff * diff
+                })
+                .sum::<f64>()
+                / avg_wait_times.len() as f64;
+            let std_dev = variance.sqrt();
+            println!("  Standard deviation: {:.2}s", std_dev);
+            println!();
+        }
+
+        // Longest wait analysis
+        if !longest_waits.is_empty() {
+            let max_longest = *longest_waits.iter().max().unwrap();
+            let min_longest = *longest_waits.iter().min().unwrap();
+            let avg_longest: Duration =
+                longest_waits.iter().sum::<Duration>() / longest_waits.len() as u32;
+
+            println!("LONGEST SINGLE WAIT TIMES:");
+            println!("  Worst case (longest wait): {:.2?}", max_longest);
+            println!("  Best case (longest wait): {:.2?}", min_longest);
+            println!("  Average longest wait: {:.2?}", avg_longest);
+            println!("  Range (max - min): {:.2?}", max_longest - min_longest);
+
+            let longest_ratio = max_longest.as_secs_f64() / min_longest.as_secs_f64().max(0.001);
+            println!("  Longest wait ratio (max/min): {:.2}x", longest_ratio);
+
+            // Interpretation
+            println!();
+            if max_longest.as_secs_f64() > 10.0 {
+                println!("  ⚠ Some philosophers experienced very long waits (>10s)");
+            }
+            println!(
+                "Some philosophers waited {}x longer than others",
+                longest_ratio as usize
             );
         }
 
@@ -218,7 +288,7 @@ fn main() {
         .map(|id| {
             Arc::new(Fork {
                 id,
-                mutex: Mutex::new(()),
+                mutex: FairMutex::new(()),
             })
         })
         .collect::<Vec<_>>();
@@ -253,10 +323,10 @@ fn main() {
         .map(|philosopher| {
             let stats = Arc::clone(&stats);
             thread::spawn(move || {
-                for round in 1..=3 {
+                for round in 1..=10 {
                     println!("{} starting round {}", philosopher.name, round);
                     philosopher.eat(&stats);
-                    philosopher.think();
+                    philosopher.digest();
                 }
                 println!("{} is done with all meals!", philosopher.name);
             })
